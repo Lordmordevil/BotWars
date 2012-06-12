@@ -402,16 +402,9 @@ class Starter(PygameHelper):
             pygame.draw.rect(self.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
             
-            pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
+            self.drawonhud(3)
             self.screen.blit(self.selected.factory_ico, (637, 447))
-            
-            pygame.draw.rect(self.screen, (45, 45, 45), (682, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (680, 440, 32, 32), 2)
             self.screen.blit(self.selected.generator_ico, (687, 447))
-            
-            pygame.draw.rect(self.screen, (45, 45, 45), (732, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (730, 440, 32, 32), 2)
             self.screen.blit(self.selected.medbay_ico, (737, 447))
             
         elif type(self.selected) is Main_base:
@@ -425,24 +418,15 @@ class Starter(PygameHelper):
             pygame.draw.rect(self.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.buildings[0].inventory[1][1] / (self.buildings[0].inv / 50))))
             pygame.draw.rect(self.screen, (0, 0, 0), (380, 500, 202, 52), 2)
             
-            
-            pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
+            self.drawonhud(2)
             self.screen.blit(self.drones[0].sel_pic, (637, 447))
-            
-            pygame.draw.rect(self.screen, (45, 45, 45), (682, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (680, 440, 32, 32), 2)
             self.screen.blit(self.selected.bat_ico, (687, 447))
             
         elif type(self.selected) is Up_factory:
             self.screen.blit(self.selected.ico_pic, (230, 500))
             
-            pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
+            self.drawonhud(2)
             self.screen.blit(self.selected.supic, (637, 447))
-            
-            pygame.draw.rect(self.screen, (45, 45, 45), (682, 442, 30, 30))
-            pygame.draw.rect(self.screen, (0, 0, 0), (680, 440, 32, 32), 2)
             self.screen.blit(self.selected.mupic, (687, 447))
             
         elif type(self.selected) is Medbay:
@@ -451,14 +435,20 @@ class Starter(PygameHelper):
 
             self.screen.blit(self.selected.ico_pic, (230, 500))
             
+            self.drawonhud(2)
+            self.screen.blit(self.selected.ico_medic, (637, 447))
+            self.screen.blit(self.selected.ico_medshop, (687, 447))
+    
+    def drawonhud(self, butons):
+        if butons >= 1:
             pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
-            self.screen.blit(self.selected.ico_medic, (637, 447))
-            
+        if butons >= 2:
             pygame.draw.rect(self.screen, (45, 45, 45), (682, 442, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (680, 440, 32, 32), 2)
-            self.screen.blit(self.selected.ico_medshop, (687, 447))
-            
+        if butons >= 3:
+            pygame.draw.rect(self.screen, (45, 45, 45), (732, 442, 30, 30))
+            pygame.draw.rect(self.screen, (0, 0, 0), (730, 440, 32, 32), 2)
         
 s = Starter()
 s.mainLoop(40)
