@@ -76,6 +76,13 @@ class Main_base(Building):
             return tempdrone
         else:
             print("You need 40 000 ore to buy this!")
+            
+    def bbat(self):
+        if self.inventory[1][1] > 5000:
+            self.inventory[1][1] -= 5000
+            self.inventory[0][1] += 1
+        else:
+            print("You need 5000 to buy a battery!")
                         
 class Up_factory(Building):
     def __init__(self):
@@ -276,11 +283,7 @@ class Starter(PygameHelper):
                 if curpos.get_distance(vec2d(646, 456)) <= 15:
                     self.drones.append(self.selected.bdrone())
                 if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 5000:
-                        self.buildings[0].inventory[1][1] -= 5000
-                        self.buildings[0].inventory[0][1] += 1
-                    else:
-                        print("You need 5000 to buy a battery!")
+                    self.selected.bbat()
             if type(self.selected) == Up_factory:
                 if curpos.get_distance(vec2d(646, 456)) <= 15:
                     if self.buildings[0].inventory[1][1] > 40000:
