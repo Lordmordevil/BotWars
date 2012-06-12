@@ -277,6 +277,17 @@ class Starter(PygameHelper):
                             self.selected = building
                      
         # ------------------- Hud control ------------------------
+        
+        def startbuild(price, type):
+            if self.buildings[0].inventory[1][1] > price:
+                self.buildings[0].inventory[1][1] -= price
+                self.hud.build_mode = 1
+                self.buildtype = type
+                self.selected.target.append(self.buildings[0].pos)
+                self.builder = self.selected
+            else:
+                print("Imate ujda ot 60 000 za da postroite Factoryto!")
+        
         curpos = vec2d(pos)
         if button == 1:
             if type(self.selected) == Main_base:
@@ -322,28 +333,11 @@ class Starter(PygameHelper):
                         print("You need 40 000 ore to buy this unit!")
             if type(self.selected) == Drone:
                 if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 60000:
-                        self.buildings[0].inventory[1][1] -= 60000
-                        self.hud.build_mode = 1
-                        self.buildtype = 1
-                        self.selected.target.append(self.buildings[0].pos)
-                        self.builder = self.selected
-                    else:
-                        print("Imate ujda ot 60 000 za da postroite Factoryto!")
+                    startbuild(60000, 1)
                 if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 50000:
-                        self.buildings[0].inventory[1][1] -= 50000
-                        self.hud.build_mode = 1
-                        self.buildtype = 2
-                        self.selected.target.append(self.buildings[0].pos)
-                        self.builder = self.selected
+                    startbuild(50000, 2)
                 if curpos.get_distance(vec2d(746, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 50000:
-                        self.buildings[0].inventory[1][1] -= 50000
-                        self.hud.build_mode = 1
-                        self.buildtype = 3
-                        self.selected.target.append(self.buildings[0].pos)
-                        self.builder = self.selected
+                    startbuild(50000, 3)
                     
         
     def mouseMotion(self, buttons, pos, rel):
