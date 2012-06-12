@@ -21,6 +21,16 @@ class Drone:
         self.task = 0
         self.speed = 5
         self.mining_speed = 1
+    def update(self):
+        dir = self.target[0] - self.pos      
+        self.bat_timer -= 0.1
+        if dir.length >= self.speed:
+            dir.length = self.speed
+            self.pos = vec2d(int(self.pos[0] + dir[0]), int(self.pos[1] + dir[1]))
+        else:
+            if len(self.target) > 1:
+                temptargets = self.target[1:len(self.target)]
+                self.target = temptargets
         
 class Building:
     def __init__(self):
@@ -55,7 +65,18 @@ class Main_base(Building):
                 print("Rabotnik vze 1 bateriq ot sklada!")
                 self.inventory[0][1] -= 1
                 requester.inventory[0][1] += 1
-                
+               
+    def bdrone(self):
+        if self.inventory[1][1] > 40000:
+            self.inventory[1][1] -= 40000
+            tempdrone = Drone()
+            tempdrone.pos = self.pos
+            target = self.pos
+            tempdrone.target.append(target)
+            return tempdrone
+        else:
+            print("You need 40 000 ore to buy this!")
+                        
 class Up_factory(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
@@ -136,10 +157,6 @@ class Starter(PygameHelper):
     
         for drone in self.drones:
             if drone.bat_timer > 1:
-                dir = drone.target[0] - drone.pos
-                
-                drone.bat_timer -= 0.1
-                
                 for ore in self.ores:
                     if drone.pos.get_distance(ore.pos) < 50:
                         drone.inventory[1][1] += drone.mining_speed
@@ -151,35 +168,29 @@ class Starter(PygameHelper):
                             drone.task = 1
                             print("Rabotnika se vrushta za da ostavi resursi v bzata")
                             drone.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
-                
-                if dir.length >= drone.speed:
-                    dir.length = drone.speed
-                    drone.pos = vec2d(int(drone.pos[0] + dir[0]), int(drone.pos[1] + dir[1]))
-                else:
-                    if len(drone.target) > 1:
-                        temptargets = drone.target[1:len(drone.target)]
-                        drone.target = temptargets
-                    else:    
-                        if self.hud.build_mode == 2 and drone == self.builder:
-                            if self.builder.pos.get_distance(self.project) < 20:
-                                if self.buildtype == 1:
-                                    tempbuild = Up_factory()
-                                    tempbuild.pos = self.project
-                                    self.buildings.append(tempbuild)
-                                    self.hud.build_mode = 0
-                                elif self.buildtype == 2:
-                                    tempbuild = Generator()
-                                    tempbuild.pos = self.project
-                                    self.buildings.append(tempbuild)
-                                    self.hud.build_mode = 0
-                                    self.buildings[0].powergain += 5    
-                                    print("The generator increases the powergain of the main base with 5!")
-                                elif self.buildtype == 3:
-                                    tempbuild = Medbay()
-                                    tempbuild.pos = self.project
-                                    self.buildings.append(tempbuild)
-                                    self.hud.build_mode = 0
-                                    print("Medbay is a way to keep your bots in shape")
+                            
+                dir = drone.target[0] - drone.pos
+                if dir.length <= drone.speed and self.hud.build_mode == 2 and drone == self.builder and drone.target[0] == self.project:    
+                    if self.builder.pos.get_distance(self.project) < 20:
+                        if self.buildtype == 1:
+                            tempbuild = Up_factory()
+                            tempbuild.pos = self.project
+                            self.buildings.append(tempbuild)
+                            self.hud.build_mode = 0
+                        elif self.buildtype == 2:
+                            tempbuild = Generator()
+                            tempbuild.pos = self.project
+                            self.buildings.append(tempbuild)
+                            self.hud.build_mode = 0
+                            self.buildings[0].powergain += 5    
+                            print("The generator increases the powergain of the main base with 5!")
+                        elif self.buildtype == 3:
+                            tempbuild = Medbay()
+                            tempbuild.pos = self.project
+                            self.buildings.append(tempbuild)
+                            self.hud.build_mode = 0
+                            print("Medbay is a way to keep your bots in shape")
+                drone.update()
             for odrone in self.drones:
                 if drone == odrone: continue
                 dist = drone.pos.get_distance(odrone.pos)
@@ -228,7 +239,6 @@ class Starter(PygameHelper):
                     if found == 0:
                         for building in self.buildings:
                             if building.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < building.size:
-                                #if self.selected.pos[1] < building.pos[1]:
                                 self.selected.target.append(building.pos)
                                 found = 1
                     if found == 0:
@@ -237,7 +247,8 @@ class Starter(PygameHelper):
                             print("Sgradata shte bude ostroena na koordinati - ", target)
                             self.project = target
                             self.hud.build_mode = 2
-                            self.builder.target.append(target)
+                            self.builder.target.append(self.project)
+                            found = 1
                     if found == 0:
                         if self.selected.single_t == 0:
                             target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
@@ -263,15 +274,7 @@ class Starter(PygameHelper):
         if button == 1:
             if type(self.selected) == Main_base:
                 if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 40000:
-                        self.buildings[0].inventory[1][1] -= 40000
-                        tempdrone = Drone()
-                        tempdrone.pos = self.buildings[0].pos
-                        target = self.buildings[0].pos
-                        tempdrone.target.append(target)
-                        self.drones.append(tempdrone)
-                    else:
-                        print("You need 40 000 ore to buy this!")
+                    self.drones.append(self.selected.bdrone())
                 if curpos.get_distance(vec2d(696, 456)) <= 15:
                     if self.buildings[0].inventory[1][1] > 5000:
                         self.buildings[0].inventory[1][1] -= 5000
@@ -366,10 +369,11 @@ class Starter(PygameHelper):
         if  self.hud.build_mode == 1:
             pygame.draw.rect(self.screen, (0, 200, 0), (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
         
-        #------------------------------------------ Drones-------------------------------
+        #------------------------------------------ Drones and buildings-------------------------------
         for building in self.buildings:
             self.screen.blit(building.pic, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255, 0, 0), (building.pos[0] - self.hud.pos[0], building.pos[1] - self.hud.pos[1]), 2)
+            
         for drone in self.drones:
             if drone == self.selected:
                 pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
@@ -401,7 +405,6 @@ class Starter(PygameHelper):
             pygame.draw.rect(self.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.selected.inventory[1][1] / 40)))
             pygame.draw.rect(self.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
-            
             self.drawonhud(3)
             self.screen.blit(self.selected.factory_ico, (637, 447))
             self.screen.blit(self.selected.generator_ico, (687, 447))
@@ -432,7 +435,6 @@ class Starter(PygameHelper):
         elif type(self.selected) is Medbay:
             self.screen.blit(self.selected.ico_pic, (230, 500))
             
-
             self.screen.blit(self.selected.ico_pic, (230, 500))
             
             self.drawonhud(2)
