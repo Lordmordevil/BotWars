@@ -357,18 +357,7 @@ class Starter(PygameHelper):
         if  self.hud.build_mode == 1:
             pygame.draw.rect(self.screen, (0, 200, 0), (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
         
-        for drone in self.drones:
-            if drone == self.selected:
-                pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
-                for target in drone.target:
-                    pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
-                for i in range(len(drone.target) - 1):
-                    pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
-                self.screen.blit(drone.sel_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
-            else:
-                self.screen.blit(drone.def_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
-            
-            pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
+        self.drawentities()
         
         self.screen.blit(self.hud.hud, (0, 400))
         #-------------------------------------------- On Hud ---------------------------
@@ -414,6 +403,19 @@ class Starter(PygameHelper):
             self.drawhudbuttons(2)
             self.screen.blit(self.selected.ico_medic, (637, 447))
             self.screen.blit(self.selected.ico_medshop, (687, 447))
+			
+	def drawentities(self):
+		for drone in self.drones:
+            if drone == self.selected:
+                pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
+                for target in drone.target:
+                    pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
+                for i in range(len(drone.target) - 1):
+                    pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
+                self.screen.blit(drone.sel_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
+            else:
+                self.screen.blit(drone.def_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
+            pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
             
     def drawstaticmap(self):
         for i in range(9):
