@@ -159,6 +159,19 @@ class Starter(PygameHelper):
         self.buildings.append(firstbuild)
             
     def update(self):
+    
+        def finishbuild (buildtype):
+            if buildtype == 1:
+                tempbuild = Up_factory()
+            elif buildtype == 2:
+                tempbuild = Generator()
+                self.buildings[0].powergain += 5    
+            elif buildtype == 3:
+                tempbuild = Medbay()
+            tempbuild.pos = self.project
+            self.buildings.append(tempbuild)
+            self.hud.build_mode = 0
+        
         if self.buildings[0].power < 255000:
             self.buildings[0].power += self.buildings[0].powergain
     
@@ -179,24 +192,8 @@ class Starter(PygameHelper):
                 dir = drone.target[0] - drone.pos
                 if dir.length <= drone.speed and self.hud.build_mode == 2 and drone == self.builder and drone.target[0] == self.project:    
                     if self.builder.pos.get_distance(self.project) < 20:
-                        if self.buildtype == 1:
-                            tempbuild = Up_factory()
-                            tempbuild.pos = self.project
-                            self.buildings.append(tempbuild)
-                            self.hud.build_mode = 0
-                        elif self.buildtype == 2:
-                            tempbuild = Generator()
-                            tempbuild.pos = self.project
-                            self.buildings.append(tempbuild)
-                            self.hud.build_mode = 0
-                            self.buildings[0].powergain += 5    
-                            print("The generator increases the powergain of the main base with 5!")
-                        elif self.buildtype == 3:
-                            tempbuild = Medbay()
-                            tempbuild.pos = self.project
-                            self.buildings.append(tempbuild)
-                            self.hud.build_mode = 0
-                            print("Medbay is a way to keep your bots in shape")
+                        finishbuild(self.buildtype)
+                        
                 drone.update()
             for odrone in self.drones:
                 if drone == odrone: continue
@@ -231,18 +228,18 @@ class Starter(PygameHelper):
                 self.selected.single_t = not self.selected.single_t
         
     def mouseUp(self, button, pos):
+        
         if pos[1] < 400:
             if button == 3:
                 if type(self.selected) is Drone:
                     found = 0
-                    if found == 0:
-                        for drone in self.drones:
-                            if drone.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < 20 and drone.bat_timer < 1:
-                                if not drone == self.selected:
-                                    self.selected.target.append(self.buildings[0].pos)
-                                    self.selected.task = 2
-                                    self.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
-                                    found = 1
+                    for drone in self.drones:
+                        if drone.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < 20 and drone.bat_timer < 1:
+                            if not drone == self.selected:
+                                self.selected.target.append(self.buildings[0].pos)
+                                self.selected.task = 2
+                                self.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
+                                found = 1
                     if found == 0:
                         for building in self.buildings:
                             if building.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < building.size:
