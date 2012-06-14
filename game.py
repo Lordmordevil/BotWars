@@ -351,22 +351,12 @@ class Starter(PygameHelper):
         
     def draw(self):
         self.screen.fill((0, 0, 0))
-        #------------------------------------------ Map ---------------------------------
-        for i in range(9):
-            for j in range(7):
-                self.screen.blit(self.hud.tile, ( (100 * i) - (self.hud.pos[0] % 100) , (100 * j) - (self.hud.pos[1] % 100) ) )
         
-        for ore in self.ores:
-            self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
+        self.drawstaticmap()
             
         if  self.hud.build_mode == 1:
             pygame.draw.rect(self.screen, (0, 200, 0), (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
         
-        #------------------------------------------ Drones and buildings-------------------------------
-        for building in self.buildings:
-            self.screen.blit(building.pic, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
-            pygame.draw.circle(self.screen, (255, 0, 0), (building.pos[0] - self.hud.pos[0], building.pos[1] - self.hud.pos[1]), 2)
-            
         for drone in self.drones:
             if drone == self.selected:
                 pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
@@ -382,9 +372,7 @@ class Starter(PygameHelper):
         
         self.screen.blit(self.hud.hud, (0, 400))
         #-------------------------------------------- On Hud ---------------------------
-        
-    
-        
+
         if type(self.selected) is Drone:
             if self.selected.single_t == 1:
                 self.screen.blit(self.hud.sing_dir, (280, 427))
@@ -398,7 +386,7 @@ class Starter(PygameHelper):
             pygame.draw.rect(self.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.selected.inventory[1][1] / 40)))
             pygame.draw.rect(self.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
-            self.drawonhud(3)
+            self.drawhudbuttons(3)
             self.screen.blit(self.selected.factory_ico, (637, 447))
             self.screen.blit(self.selected.generator_ico, (687, 447))
             self.screen.blit(self.selected.medbay_ico, (737, 447))
@@ -411,21 +399,31 @@ class Starter(PygameHelper):
             pygame.draw.rect(self.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.buildings[0].inventory[1][1] / (self.buildings[0].inv / 50))))
             pygame.draw.rect(self.screen, (0, 0, 0), (380, 500, 202, 52), 2)
             
-            self.drawonhud(2)
+            self.drawhudbuttons(2)
             self.screen.blit(self.drones[0].sel_pic, (637, 447))
             self.screen.blit(self.selected.bat_ico, (687, 447))
             
         elif type(self.selected) is Up_factory:
             self.screen.blit(self.selected.ico_pic, (230, 500))
-            self.drawonhud(2)
+            self.drawhudbuttons(2)
             self.screen.blit(self.selected.supic, (637, 447))
             self.screen.blit(self.selected.mupic, (687, 447))
             
         elif type(self.selected) is Medbay:
             self.screen.blit(self.selected.ico_pic, (230, 500))
-            self.drawonhud(2)
+            self.drawhudbuttons(2)
             self.screen.blit(self.selected.ico_medic, (637, 447))
             self.screen.blit(self.selected.ico_medshop, (687, 447))
+            
+    def drawstaticmap(self):
+        for i in range(9):
+            for j in range(7):
+                self.screen.blit(self.hud.tile, ( (100 * i) - (self.hud.pos[0] % 100) , (100 * j) - (self.hud.pos[1] % 100) ) )
+        for ore in self.ores:
+            self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
+        for building in self.buildings:
+            self.screen.blit(building.pic, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
+            pygame.draw.circle(self.screen, (255, 0, 0), (building.pos[0] - self.hud.pos[0], building.pos[1] - self.hud.pos[1]), 2)
             
     def drawbattery(self, cap):
         pygame.draw.rect(self.screen, (0, 0, 0), (345, 515, 15, 10), 2)
@@ -434,7 +432,7 @@ class Starter(PygameHelper):
         pygame.draw.rect(self.screen, (0, 0, 0), (340, 520, 25, 75 - (self.selected.power / (3.4 * cap))))
         
     
-    def drawonhud(self, butons):
+    def drawhudbuttons(self, butons):
         if butons >= 1:
             pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
