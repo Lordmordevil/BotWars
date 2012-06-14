@@ -21,6 +21,7 @@ class Drone:
         self.task = 0
         self.speed = 5
         self.mining_speed = 1
+        
     def update(self):
         dir = self.target[0] - self.pos      
         self.power -= 0.1
@@ -31,6 +32,24 @@ class Drone:
             if len(self.target) > 1:
                 temptargets = self.target[1:len(self.target)]
                 self.target = temptargets
+                
+    def drawhud(self, target):
+        if self.single_t == 1:
+            target.screen.blit(target.hud.sing_dir, (280, 427))
+        else:
+            target.screen.blit(target.hud.mul_dir, (280, 427))
+            
+        target.screen.blit(self.ico_pic, (230, 505))
+        target.drawbattery(cap = 1)
+            
+        target.screen.blit(target.ores[0].ico, (380, 505))
+        pygame.draw.rect(target.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.inventory[1][1] / 40)))
+        pygame.draw.rect(target.screen, (0, 0, 0), (380, 505, 25, 25), 2)
+            
+        target.drawhudbuttons(3)
+        target.screen.blit(self.factory_ico, (637, 447))
+        target.screen.blit(self.generator_ico, (687, 447))
+        target.screen.blit(self.medbay_ico, (737, 447))
         
 class Building:
     def __init__(self):
@@ -83,6 +102,16 @@ class Main_base(Building):
             self.inventory[0][1] += 1
         else:
             print("You need 5000 to buy a battery!")
+            
+    def drawhud(self, target):
+        target.screen.blit(self.ico_pic, (230, 500))
+        target.drawbattery(cap = 1000)       
+        target.screen.blit(self.storepic, (381, 501))
+        pygame.draw.rect(target.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.inventory[1][1] / (self.inv / 50))))
+        pygame.draw.rect(target.screen, (0, 0, 0), (380, 500, 202, 52), 2)  
+        target.drawhudbuttons(2)
+        target.screen.blit(target.drones[0].sel_pic, (637, 447))
+        target.screen.blit(self.bat_ico, (687, 447))
                         
 class Up_factory(Building):
     def __init__(self):
@@ -92,11 +121,20 @@ class Up_factory(Building):
         self.mupic = pygame.image.load("sprites/mup.png")
         self.size = 50
         
+    def drawhud(self, target):
+        target.screen.blit(self.ico_pic, (230, 500))
+        target.drawhudbuttons(2)
+        target.screen.blit(self.supic, (637, 447))
+        target.screen.blit(self.mupic, (687, 447))
+        
 class Generator(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
         self.pic = pygame.image.load("sprites/generator.png")
         self.size = 50    
+        
+    def drawhud(self, target):
+        pass
 
 class Medbay(Building):
     def __init__(self):
@@ -104,7 +142,13 @@ class Medbay(Building):
         self.pic = pygame.image.load("sprites/medbay.png")
         self.ico_medic = pygame.image.load("sprites/mup.png")
         self.ico_medshop = pygame.image.load("sprites/mup.png")
-        self.size = 50         
+        self.size = 50
+
+    def drawhud(self, target):        
+        target.screen.blit(self.ico_pic, (230, 500))
+        target.drawhudbuttons(2)
+        target.screen.blit(self.ico_medic, (637, 447))
+        target.screen.blit(self.ico_medshop, (687, 447))
 
 class Ore:
     def __init__(self):
@@ -360,52 +404,12 @@ class Starter(PygameHelper):
         self.drawentities()
         
         self.screen.blit(self.hud.hud, (0, 400))
-        #-------------------------------------------- On Hud ---------------------------
 
-        if type(self.selected) is Drone:
-            if self.selected.single_t == 1:
-                self.screen.blit(self.hud.sing_dir, (280, 427))
-            else:
-                self.screen.blit(self.hud.mul_dir, (280, 427))
+        self.selected.drawhud(self)
             
-            self.screen.blit(self.selected.ico_pic, (230, 505))
-            self.drawbattery(cap = 1)
             
-            self.screen.blit(self.ores[0].ico, (380, 505))
-            pygame.draw.rect(self.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.selected.inventory[1][1] / 40)))
-            pygame.draw.rect(self.screen, (0, 0, 0), (380, 505, 25, 25), 2)
-            
-            self.drawhudbuttons(3)
-            self.screen.blit(self.selected.factory_ico, (637, 447))
-            self.screen.blit(self.selected.generator_ico, (687, 447))
-            self.screen.blit(self.selected.medbay_ico, (737, 447))
-            
-        elif type(self.selected) is Main_base:
-            self.screen.blit(self.selected.ico_pic, (230, 500))
-            self.drawbattery(cap = 1000)
-            
-            self.screen.blit(self.selected.storepic, (381, 501))
-            pygame.draw.rect(self.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.buildings[0].inventory[1][1] / (self.buildings[0].inv / 50))))
-            pygame.draw.rect(self.screen, (0, 0, 0), (380, 500, 202, 52), 2)
-            
-            self.drawhudbuttons(2)
-            self.screen.blit(self.drones[0].sel_pic, (637, 447))
-            self.screen.blit(self.selected.bat_ico, (687, 447))
-            
-        elif type(self.selected) is Up_factory:
-            self.screen.blit(self.selected.ico_pic, (230, 500))
-            self.drawhudbuttons(2)
-            self.screen.blit(self.selected.supic, (637, 447))
-            self.screen.blit(self.selected.mupic, (687, 447))
-            
-        elif type(self.selected) is Medbay:
-            self.screen.blit(self.selected.ico_pic, (230, 500))
-            self.drawhudbuttons(2)
-            self.screen.blit(self.selected.ico_medic, (637, 447))
-            self.screen.blit(self.selected.ico_medshop, (687, 447))
-			
-	def drawentities(self):
-		for drone in self.drones:
+    def drawentities(self):
+        for drone in self.drones:
             if drone == self.selected:
                 pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
                 for target in drone.target:
@@ -432,8 +436,7 @@ class Starter(PygameHelper):
         pygame.draw.rect(self.screen, (255 - int(self.selected.power / cap), 0 + int(self.selected.power / cap), 0), (340, 520, 25, 75))
         pygame.draw.rect(self.screen, (0, 0, 0), (340, 520, 25, 75), 2)
         pygame.draw.rect(self.screen, (0, 0, 0), (340, 520, 25, 75 - (self.selected.power / (3.4 * cap))))
-        
-    
+           
     def drawhudbuttons(self, butons):
         if butons >= 1:
             pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
