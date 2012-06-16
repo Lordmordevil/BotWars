@@ -51,6 +51,25 @@ class Drone:
         target.screen.blit(self.generator_ico, (687, 447))
         target.screen.blit(self.medbay_ico, (737, 447))
         
+    def colider (self, odrone, targ):
+        dist = self.pos.get_distance(odrone.pos)
+        if dist < 26:
+            overlap = 26 - dist
+            ndir = odrone.pos - self.pos
+            ndir.length = overlap
+            if self.task == 2 and odrone.power < 1:
+                self.inventory[0][1] -= 1
+                odrone.power = 150
+                self.task = 0    
+            if self == targ.selected:
+                odrone.pos = odrone.pos + ndir
+            elif odrone == targ.selected:
+                self.pos = self.pos - ndir
+            else:
+                ndir.length =  ndir.length / 2
+                odrone.pos = odrone.pos + ndir
+                self.pos = self.pos - ndir
+        
 class Building:
     def __init__(self):
         self.pos = vec2d(0, 0)
@@ -173,7 +192,6 @@ class Ore:
             drone.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
         return True
     
-        
 class Hud:
     def __init__(self):
         self.build_mode = 0
@@ -247,25 +265,10 @@ class Starter(PygameHelper):
                         finishbuild(self.buildtype)
                         
                 drone.update()
+            
             for odrone in self.drones:
-                if drone == odrone: continue
-                dist = drone.pos.get_distance(odrone.pos)
-                if dist < 26:
-                    overlap = 26 - dist
-                    ndir = odrone.pos - drone.pos
-                    ndir.length = overlap
-                    if drone.task == 2 and odrone.power < 1:
-                        drone.inventory[0][1] -= 1
-                        odrone.power = 150
-                        drone.task = 0    
-                    if drone == self.selected:
-                        odrone.pos = odrone.pos + ndir
-                    elif odrone == self.selected:
-                        drone.pos = drone.pos - ndir
-                    else:
-                        ndir.length =  ndir.length / 2
-                        odrone.pos = odrone.pos + ndir
-                        drone.pos = drone.pos - ndir
+                if not drone == odrone: drone.colider(odrone, self)
+                
             for building in self.buildings:
                 if building.pos.get_distance(drone.pos) < drone.speed:
                     if drone.target[0] == building.pos and building == self.buildings[0]:
