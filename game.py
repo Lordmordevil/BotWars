@@ -13,7 +13,7 @@ class Animation:
     
     def setup(self ,master_image ,cell_size , master_width):
         for img in range(int(master_width/cell_size)):
-            self.frames.append(master_image.subsurface((img*cell_size,0,cell_size,cell_size)))
+            self.frames.append(master_image.subsurface(img*cell_size,0,cell_size,cell_size))
         self.maxframes = len(self.frames) - 1
     
     def draw(self, target, pos):
@@ -30,7 +30,8 @@ class Drone:
         self.target = []
         self.single_t = True
         self.def_pic = pygame.image.load("sprites/bot.png")
-        self.sel_pic = pygame.image.load("sprites/bot_s.png")
+        self.image = Animation()
+        self.image.setup(self.def_pic, 20, 20)
         self.ico_pic = pygame.image.load("sprites/bot_ico.png")
         self.generator_ico = pygame.image.load("sprites/gico.png")
         self.factory_ico = pygame.image.load("sprites/faico.png")
@@ -99,6 +100,8 @@ class Main_base(Building):
         self.size = 35
         self.storepic = pygame.image.load("sprites/main_store.png")
         self.pic = pygame.image.load("sprites/main_base.png")
+        self.image = Animation()
+        self.image.setup(self.pic, 70, 70)
         self.ico_pic = pygame.image.load("sprites/main_ico.png")
         self.bat_ico = pygame.image.load("sprites/bat_ico.png")
         self.inventory = [["battery", 2], ["iron ore", 500000]]
@@ -152,13 +155,15 @@ class Main_base(Building):
         pygame.draw.rect(target.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.inventory[1][1] / (self.inv / 50))))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 500, 202, 52), 2)  
         target.drawhudbuttons(2)
-        target.screen.blit(target.drones[0].sel_pic, (637, 447))
+        target.screen.blit(target.drones[0].def_pic, (637, 447))
         target.screen.blit(self.bat_ico, (687, 447))
                         
 class Up_factory(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
         self.pic = pygame.image.load("sprites/factory.png")
+        self.image = Animation()
+        self.image.setup(self.pic, 100, 100)
         self.supic = pygame.image.load("sprites/spu.png")
         self.mupic = pygame.image.load("sprites/mup.png")
         self.size = 50
@@ -186,6 +191,8 @@ class Medbay(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
         self.pic = pygame.image.load("sprites/medbay.png")
+        self.image = Animation()
+        self.image.setup(self.pic, 100, 100)
         self.ico_medic = pygame.image.load("sprites/mup.png")
         self.ico_medshop = pygame.image.load("sprites/mup.png")
         self.size = 50
@@ -448,9 +455,7 @@ class Starter(PygameHelper):
                     pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
                 for i in range(len(drone.target) - 1):
                     pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
-                self.screen.blit(drone.sel_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
-            else:
-                self.screen.blit(drone.def_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
+            self.screen.blit(drone.def_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
             
     def drawstaticmap(self):
@@ -460,8 +465,7 @@ class Starter(PygameHelper):
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
         for building in self.buildings:
-            self.screen.blit(building.pic, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
-            pygame.draw.circle(self.screen, (255, 0, 0), (building.pos[0] - self.hud.pos[0], building.pos[1] - self.hud.pos[1]), 2)
+            building.image.draw(self, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
             
     def drawbattery(self, cap):
         pygame.draw.rect(self.screen, (0, 0, 0), (345, 515, 15, 10), 2)
