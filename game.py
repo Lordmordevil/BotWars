@@ -162,6 +162,18 @@ class Ore:
         self.quantity = 800000
         self.size = 50
         
+    def mine(self, targ, drone):
+        drone.inventory[1][1] += drone.mining_speed
+        self.quantity -= 1
+        if self.quantity < 0:
+            return False
+        if drone.inventory[1][1] >= 1000 and drone.task == 0:
+            drone.target.append(targ.buildings[0].pos)
+            drone.task = 1
+            drone.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
+        return True
+    
+        
 class Hud:
     def __init__(self):
         self.build_mode = 0
@@ -226,15 +238,8 @@ class Starter(PygameHelper):
             if drone.power > 1:
                 for ore in self.ores:
                     if drone.pos.get_distance(ore.pos) < 50:
-                        drone.inventory[1][1] += drone.mining_speed
-                        ore.quantity -= 1
-                        if ore.quantity < 0:
+                        if not ore.mine(self, drone):
                             self.ores.remove(ore)
-                        if drone.inventory[1][1] >= 1000 and drone.task == 0:
-                            drone.target.append(self.buildings[0].pos)
-                            drone.task = 1
-                            print("Rabotnika se vrushta za da ostavi resursi v bzata")
-                            drone.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
                             
                 dir = drone.target[0] - drone.pos
                 if dir.length <= drone.speed and self.hud.build_mode == 2 and drone == self.builder and drone.target[0] == self.project:    
