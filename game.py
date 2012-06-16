@@ -5,6 +5,25 @@ from vec2d import *
 from math import e, pi, cos, sin, sqrt
 from random import uniform
 
+class Animation:
+    def __init__(self):
+        self.frames = []
+        self.curframe = 0
+        self.maxframe = 0
+    
+    def setup(self ,master_image ,cell_size , master_width):
+        for img in range(int(master_width/cell_size)):
+            self.frames.append(master_image.subsurface((img*cell_size,0,cell_size,cell_size)))
+        self.maxframes = len(self.frames) - 1
+    
+    def draw(self, target, pos):
+        target.screen.blit(self.frames[self.curframe], pos)
+        if self.curframe < self.maxframe:
+            curframe += 1
+        else:
+            curframe = 0
+    
+
 class Drone:
     def __init__(self):
         self.pos = vec2d(0, 0)
@@ -154,8 +173,12 @@ class Generator(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
         self.pic = pygame.image.load("sprites/generator.png")
+        self.image = Animation()
+        self.image.setup(self.pic, 100, 100)
         self.size = 50    
-        
+    
+    
+    
     def drawhud(self, target):
         pass
 
