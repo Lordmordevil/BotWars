@@ -103,6 +103,10 @@ class Main_base(Building):
         else:
             print("You need 5000 to buy a battery!")
             
+    def update (self):
+        if self.power < 255000:
+            self.power += self.powergain
+            
     def drawhud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
         target.drawbattery(cap = 1000)       
@@ -216,8 +220,7 @@ class Starter(PygameHelper):
             self.buildings.append(tempbuild)
             self.hud.build_mode = 0
         
-        if self.buildings[0].power < 255000:
-            self.buildings[0].power += self.buildings[0].powergain
+        self.buildings[0].update()
     
         for drone in self.drones:
             if drone.power > 1:
@@ -376,8 +379,7 @@ class Starter(PygameHelper):
                 if curpos.get_distance(vec2d(696, 456)) <= 15:
                     startbuild(50000, 2)
                 if curpos.get_distance(vec2d(746, 456)) <= 15:
-                    startbuild(50000, 3)
-                    
+                    startbuild(50000, 3)                   
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
@@ -406,8 +408,7 @@ class Starter(PygameHelper):
         self.screen.blit(self.hud.hud, (0, 400))
 
         self.selected.drawhud(self)
-            
-            
+                      
     def drawentities(self):
         for drone in self.drones:
             if drone == self.selected:
