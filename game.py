@@ -26,7 +26,7 @@ class Animation:
         if self.curframe == self.maxframe:
             self.curframe = 0
         else:
-            if self.timer == 3:
+            if self.timer == 4:
                 self.curframe += 1
                 self.timer = 0
             else:
@@ -105,7 +105,7 @@ class Building:
 
 class Main_base(Building):
     def __init__(self):
-        self.size = 35
+        self.size = 140
         self.storepic = pygame.image.load("sprites/main_store.png")
         self.image = Animation()
         self.image.setup("main")
