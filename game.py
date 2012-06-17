@@ -13,11 +13,6 @@ class Animation:
         self.maxframe = 0
         self.timer = 0
     
-#    def setup(self ,master_image ,cell_size , master_width ,frames):
-#        for img in range(int(master_width/cell_size)):
-#            self.frames.append(master_image.subsurface(img*cell_size,0,cell_size,cell_size))
-#            self.maxframes = img
- 
     def setup(self, folder):
         tempimages = glob.glob("sprites/" + folder + "/frame*.png")
         tempimages.sort()
@@ -37,7 +32,6 @@ class Animation:
             else:
                 self.timer += 1
     
-
 class Drone:
     def __init__(self):
         self.pos = vec2d(0, 0)
@@ -49,7 +43,7 @@ class Drone:
         self.ico_pic = pygame.image.load("sprites/bot_ico.png")
         self.generator_ico = pygame.image.load("sprites/gico.png")
         self.factory_ico = pygame.image.load("sprites/faico.png")
-        self.medbay_ico = pygame.image.load("sprites/bat_ico.png")
+        self.medbay_ico = pygame.image.load("sprites/med_ico.png")
         self.power = 255
         self.inventory = [["battery", 0], ["iron ore", 0]]
         self.task = 0
@@ -80,7 +74,7 @@ class Drone:
         pygame.draw.rect(target.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.inventory[1][1] / 40)))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
-        target.drawhudbuttons(3)
+        target.drawhudbuttons(4)
         target.screen.blit(self.factory_ico, (637, 447))
         target.screen.blit(self.generator_ico, (687, 447))
         target.screen.blit(self.medbay_ico, (737, 447))
@@ -117,6 +111,7 @@ class Main_base(Building):
         self.image.setup("main")
         self.ico_pic = pygame.image.load("sprites/main_ico.png")
         self.bat_ico = pygame.image.load("sprites/bat_ico.png")
+        self.dro_ico = pygame.image.load("sprites/dro_ico.png")
         self.inventory = [["battery", 2], ["iron ore", 500000]]
         self.powergain = 5
         self.power = 100000
@@ -126,7 +121,6 @@ class Main_base(Building):
         if self.power > 255:
             requester.power = 255
             self.power -= 255
-        requester.target.insert(1, vec2d(self.pos[0], self.pos[1] + 50))
         if requester.task == 1:
             self.inventory[1][1] += requester.inventory[1][1]
             requester.inventory[1][1] = 0
@@ -168,7 +162,7 @@ class Main_base(Building):
         pygame.draw.rect(target.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.inventory[1][1] / (self.inv / 50))))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 500, 202, 52), 2)  
         target.drawhudbuttons(2)
-        target.screen.blit(target.drones[0].def_pic, (637, 447))
+        target.screen.blit(self.dro_ico, (637, 447))
         target.screen.blit(self.bat_ico, (687, 447))
                         
 class Up_factory(Building):
@@ -197,6 +191,16 @@ class Generator(Building):
     
     def drawhud(self, target):
         pass
+        
+class Outpost(Building):
+    def __init__(self):
+        self.ico_pic = pygame.image.load("sprites/generator_ico.png")
+        self.image = Animation()
+        self.image.setup("outpost")
+        self.size = 50    
+    
+    def drawhud(self, target):
+        pass
 
 class Medbay(Building):
     def __init__(self):
@@ -222,12 +226,19 @@ class Ore:
         self.size = 50
         
     def mine(self, targ, drone):
+        reldist = 0
         drone.inventory[1][1] += drone.mining_speed
         self.quantity -= 1
         if self.quantity < 0:
             return False
         if drone.inventory[1][1] >= 1000 and drone.task == 0:
-            drone.target.append(targ.buildings[0].pos)
+            for building in targ.buildings:
+                if type(building) is Main_base or type(building) is Outpost:
+                    dir = drone.pos - building.pos
+                    if dir.length < reldist or reldist == 0:
+                        tempbuilding = building
+                        reldist = dir.length
+            drone.target.append(tempbuilding.pos)
             drone.task = 1
             drone.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
         return True
@@ -286,6 +297,8 @@ class Starter(PygameHelper):
                 self.buildings[0].powergain += 5    
             elif buildtype == 3:
                 tempbuild = Medbay()
+            elif buildtype == 4:
+                tempbuild = Outpost()
             tempbuild.pos = self.project
             self.buildings.append(tempbuild)
             self.hud.build_mode = 0
@@ -311,8 +324,8 @@ class Starter(PygameHelper):
                 
             for building in self.buildings:
                 if building.pos.get_distance(drone.pos) < drone.speed:
-                    if drone.target[0] == building.pos and building == self.buildings[0]:
-                        building.request(drone)
+                    if drone.target[0] == building.pos and (type(building)  is Main_base or type(building)  is Outpost):
+                        self.buildings[0].request(drone)
                     
     def keyUp(self, key):
         pass 
@@ -427,7 +440,9 @@ class Starter(PygameHelper):
                 if curpos.get_distance(vec2d(696, 456)) <= 15:
                     startbuild(50000, 2)
                 if curpos.get_distance(vec2d(746, 456)) <= 15:
-                    startbuild(50000, 3)                   
+                    startbuild(50000, 3)  
+                if curpos.get_distance(vec2d(646, 506)) <= 15:
+                    startbuild(50000, 4)  
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
@@ -441,8 +456,7 @@ class Starter(PygameHelper):
             
         if  self.hud.build_mode == 1:
             self.buildpos = vec2d(int(pos[0]), int(pos[1]))
-            
-        
+                 
     def draw(self):
         self.screen.fill((0, 0, 0))
         
@@ -493,6 +507,15 @@ class Starter(PygameHelper):
         if butons >= 3:
             pygame.draw.rect(self.screen, (45, 45, 45), (732, 442, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (730, 440, 32, 32), 2)
+        if butons >= 4:
+            pygame.draw.rect(self.screen, (45, 45, 45), (632, 492, 30, 30))
+            pygame.draw.rect(self.screen, (0, 0, 0), (630, 490, 32, 32), 2)
+        if butons >= 5:
+            pygame.draw.rect(self.screen, (45, 45, 45), (682, 492, 30, 30))
+            pygame.draw.rect(self.screen, (0, 0, 0), (680, 490, 32, 32), 2)
+        if butons >= 6:
+            pygame.draw.rect(self.screen, (45, 45, 45), (732, 492, 30, 30))
+            pygame.draw.rect(self.screen, (0, 0, 0), (730, 490, 32, 32), 2)
         
 s = Starter()
 s.mainLoop(40)
