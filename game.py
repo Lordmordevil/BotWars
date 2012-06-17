@@ -4,24 +4,38 @@ from pygame.locals import *
 from vec2d import *
 from math import e, pi, cos, sin, sqrt
 from random import uniform
+import glob, sys
 
 class Animation:
     def __init__(self):
         self.frames = []
         self.curframe = 0
         self.maxframe = 0
+        self.timer = 0
     
-    def setup(self ,master_image ,cell_size , master_width):
-        for img in range(int(master_width/cell_size)):
-            self.frames.append(master_image.subsurface(img*cell_size,0,cell_size,cell_size))
-        self.maxframes = len(self.frames) - 1
-    
+#    def setup(self ,master_image ,cell_size , master_width ,frames):
+#        for img in range(int(master_width/cell_size)):
+#            self.frames.append(master_image.subsurface(img*cell_size,0,cell_size,cell_size))
+#            self.maxframes = img
+ 
+    def setup(self, folder):
+        tempimages = glob.glob("sprites/" + folder + "/frame*.png")
+        tempimages.sort()
+        for i in range(len(tempimages)):        
+            self.frames.append(pygame.image.load(tempimages[i]))
+        self.maxframe = len(self.frames) - 1
+ 
     def draw(self, target, pos):
         target.screen.blit(self.frames[self.curframe], pos)
-        if self.curframe < self.maxframe:
-            curframe += 1
+        
+        if self.curframe == self.maxframe:
+            self.curframe = 0
         else:
-            curframe = 0
+            if self.timer == 3:
+                self.curframe += 1
+                self.timer = 0
+            else:
+                self.timer += 1
     
 
 class Drone:
@@ -29,9 +43,9 @@ class Drone:
         self.pos = vec2d(0, 0)
         self.target = []
         self.single_t = True
-        self.def_pic = pygame.image.load("sprites/bot.png")
         self.image = Animation()
-        self.image.setup(self.def_pic, 20, 20)
+        self.image.setup("drone")
+        self.def_pic = pygame.image.load("sprites/bat_ico.png")
         self.ico_pic = pygame.image.load("sprites/bot_ico.png")
         self.generator_ico = pygame.image.load("sprites/gico.png")
         self.factory_ico = pygame.image.load("sprites/faico.png")
@@ -99,9 +113,8 @@ class Main_base(Building):
     def __init__(self):
         self.size = 35
         self.storepic = pygame.image.load("sprites/main_store.png")
-        self.pic = pygame.image.load("sprites/main_base.png")
         self.image = Animation()
-        self.image.setup(self.pic, 70, 70)
+        self.image.setup("main")
         self.ico_pic = pygame.image.load("sprites/main_ico.png")
         self.bat_ico = pygame.image.load("sprites/bat_ico.png")
         self.inventory = [["battery", 2], ["iron ore", 500000]]
@@ -161,9 +174,8 @@ class Main_base(Building):
 class Up_factory(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
-        self.pic = pygame.image.load("sprites/factory.png")
         self.image = Animation()
-        self.image.setup(self.pic, 100, 100)
+        self.image.setup("factory")
         self.supic = pygame.image.load("sprites/spu.png")
         self.mupic = pygame.image.load("sprites/mup.png")
         self.size = 50
@@ -177,9 +189,8 @@ class Up_factory(Building):
 class Generator(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
-        self.pic = pygame.image.load("sprites/generator.png")
         self.image = Animation()
-        self.image.setup(self.pic, 100, 100)
+        self.image.setup("generator")
         self.size = 50    
     
     
@@ -190,9 +201,8 @@ class Generator(Building):
 class Medbay(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
-        self.pic = pygame.image.load("sprites/medbay.png")
         self.image = Animation()
-        self.image.setup(self.pic, 100, 100)
+        self.image.setup("medbay")
         self.ico_medic = pygame.image.load("sprites/mup.png")
         self.ico_medshop = pygame.image.load("sprites/mup.png")
         self.size = 50
@@ -455,7 +465,7 @@ class Starter(PygameHelper):
                     pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
                 for i in range(len(drone.target) - 1):
                     pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
-            self.screen.blit(drone.def_pic, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
+            drone.image.draw(self, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
             
     def drawstaticmap(self):
