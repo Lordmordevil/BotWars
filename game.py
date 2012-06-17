@@ -197,7 +197,7 @@ class Outpost(Building):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
         self.image = Animation()
         self.image.setup("outpost")
-        self.size = 50    
+        self.size = 35    
     
     def drawhud(self, target):
         pass
@@ -246,6 +246,7 @@ class Ore:
 class Hud:
     def __init__(self):
         self.build_mode = 0
+        self.buildcolor = (0, 255, 0)
         self.pos = vec2d(0, 0) 
         self.hud = pygame.image.load("sprites/hud.png")
         self.sing_dir = pygame.image.load("sprites/sp.png")
@@ -355,12 +356,18 @@ class Starter(PygameHelper):
                                 found = 1
                     if found == 0:
                         if self.hud.build_mode == 1:
+                            permit = True
                             target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
-                            print("Sgradata shte bude ostroena na koordinati - ", target)
-                            self.project = target
-                            self.hud.build_mode = 2
-                            self.builder.target.append(self.project)
-                            found = 1
+                            for building in self.buildings:
+                                dir = building.pos - target
+                                if dir.length < building.size + 50:
+                                    permit = False
+                            if permit:
+                                print("Sgradata shte bude ostroena na koordinati - ", target)
+                                self.project = target
+                                self.hud.build_mode = 2
+                                self.builder.target.append(self.project)
+                                found = 1
                     if found == 0:
                         if self.selected.single_t == 0:
                             target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
@@ -456,14 +463,19 @@ class Starter(PygameHelper):
             
         if  self.hud.build_mode == 1:
             self.buildpos = vec2d(int(pos[0]), int(pos[1]))
-                 
+            self.hud.buildcolor = (0, 200, 0)
+            for building in self.buildings:
+                dir = (building.pos - self.hud.pos) - pos
+                if dir.length < building.size + 60:
+                    self.hud.buildcolor = (255, 0, 0)
+                          
     def draw(self):
         self.screen.fill((0, 0, 0))
         
         self.drawstaticmap()
             
         if  self.hud.build_mode == 1:
-            pygame.draw.rect(self.screen, (0, 200, 0), (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
+            pygame.draw.rect(self.screen, self.hud.buildcolor, (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
         
         self.drawentities()
         
@@ -488,6 +500,10 @@ class Starter(PygameHelper):
                 self.screen.blit(self.hud.tile, ( (100 * i) - (self.hud.pos[0] % 100) , (100 * j) - (self.hud.pos[1] % 100) ) )
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
+        for building in self.buildings:
+            if type(building) is Generator or type(building) is Outpost:
+                pygame.draw.line(self.screen, (0, 255, 0), building.pos - self.hud.pos, (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos)
+                pygame.draw.line(self.screen, (0, 255, 0), (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos, self.buildings[0].pos - self.hud.pos)
         for building in self.buildings:
             building.image.draw(self, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
             
