@@ -74,7 +74,7 @@ class Drone:
         pygame.draw.rect(target.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.inventory[1][1] / 40)))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
-        target.drawhudbuttons(4)
+        target.drawhudbuttons(5)
         target.screen.blit(self.factory_ico, (637, 447))
         target.screen.blit(self.generator_ico, (687, 447))
         target.screen.blit(self.medbay_ico, (737, 447))
@@ -192,6 +192,18 @@ class Generator(Building):
     def drawhud(self, target):
         pass
         
+class Whearhouse(Building):
+    def __init__(self):
+        self.ico_pic = pygame.image.load("sprites/generator_ico.png")
+        self.image = Animation()
+        self.image.setup("stockpile")
+        self.size = 50    
+    
+    
+    
+    def drawhud(self, target):
+        pass
+        
 class Outpost(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
@@ -300,6 +312,9 @@ class Starter(PygameHelper):
                 tempbuild = Medbay()
             elif buildtype == 4:
                 tempbuild = Outpost()
+            elif buildtype == 5:
+                tempbuild = Whearhouse()
+                self.buildings[0].inv += 500000
             tempbuild.pos = self.project
             self.buildings.append(tempbuild)
             self.hud.build_mode = 0
@@ -449,7 +464,9 @@ class Starter(PygameHelper):
                 if curpos.get_distance(vec2d(746, 456)) <= 15:
                     startbuild(50000, 3)  
                 if curpos.get_distance(vec2d(646, 506)) <= 15:
-                    startbuild(50000, 4)  
+                    startbuild(50000, 4) 
+                if curpos.get_distance(vec2d(696, 506)) <= 15:
+                    startbuild(50000, 5)
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
@@ -501,7 +518,7 @@ class Starter(PygameHelper):
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
         for building in self.buildings:
-            if type(building) is Generator or type(building) is Outpost:
+            if type(building) is Generator or type(building) is Outpost or type(building) is Whearhouse:
                 pygame.draw.line(self.screen, (0, 255, 0), building.pos - self.hud.pos, (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos)
                 pygame.draw.line(self.screen, (0, 255, 0), (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos, self.buildings[0].pos - self.hud.pos)
         for building in self.buildings:
