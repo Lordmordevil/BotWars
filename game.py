@@ -489,14 +489,7 @@ class Starter(PygameHelper):
         # ------------------- Hud control ------------------------
         curpos = vec2d(pos)
         if button == 1:
-            if type(self.selected) == Main_base:
-                self.selected.detectact(self, curpos)
-            if type(self.selected) == Up_factory:
-                self.selected.detectact(self, curpos)
-            if type(self.selected) == Medbay:
-                self.selected.detectact(self, curpos)
-            if type(self.selected) == Drone:
-                self.selected.detectact(self, curpos)
+            self.selected.detectact(self, curpos)
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
