@@ -113,6 +113,57 @@ class Drone:
                 ndir.length =  ndir.length / 2
                 odrone.pos = odrone.pos + ndir
                 self.pos = self.pos - ndir
+                
+    def droneaction(self, target, pos):
+        def helpdrone(target, pos):
+            for drone in target.drones:
+                if drone.pos.get_distance(vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])) < 20 and drone.power < 1:
+                    if not drone == target.selected:
+                        target.selected.target.append(target.buildings[0].pos)
+                        target.selected.task = 2
+                        target.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
+                        return 1
+            return 0
+        
+        def visitbuilding(target, pos):
+            for building in target.buildings:
+                if building.pos.get_distance(vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])) < building.size:
+                    target.selected.target.append(building.pos)
+                    return 1
+            return 0
+            
+        def builddata(target, pos):
+            if target.hud.build_mode == 1:
+                permit = True
+                btarget = vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])
+                for building in target.buildings:
+                    dir = building.pos - btarget
+                    if dir.length < building.size + 50: permit = False
+                if permit:
+                    print("Sgradata shte bude ostroena na koordinati - ", btarget)
+                    target.project = btarget
+                    target.hud.build_mode = 2
+                    target.builder.target.append(target.project)
+                    return 1
+            return 0
+            
+        def movedrone(target, pos):
+            if target.selected.single_t == 0:
+                dtarget = vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])
+                target.selected.target.append(dtarget)
+            else:
+                targets = []
+                dtarget = vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])
+                targets.append(dtarget)
+                target.selected.target = targets
+                
+        found = helpdrone(target, pos)
+        if found == 0:
+            found = visitbuilding(target, pos)           
+        if found == 0:
+            found = builddata(target, pos)            
+        if found == 0:
+            movedrone(target, pos)            
         
 class Building:
     def __init__(self):
@@ -423,42 +474,7 @@ class Starter(PygameHelper):
         if pos[1] < 400:
             if button == 3:
                 if type(self.selected) is Drone:
-                    found = 0
-                    for drone in self.drones:
-                        if drone.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < 20 and drone.power < 1:
-                            if not drone == self.selected:
-                                self.selected.target.append(self.buildings[0].pos)
-                                self.selected.task = 2
-                                self.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
-                                found = 1
-                    if found == 0:
-                        for building in self.buildings:
-                            if building.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < building.size:
-                                self.selected.target.append(building.pos)
-                                found = 1
-                    if found == 0:
-                        if self.hud.build_mode == 1:
-                            permit = True
-                            target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
-                            for building in self.buildings:
-                                dir = building.pos - target
-                                if dir.length < building.size + 50:
-                                    permit = False
-                            if permit:
-                                print("Sgradata shte bude ostroena na koordinati - ", target)
-                                self.project = target
-                                self.hud.build_mode = 2
-                                self.builder.target.append(self.project)
-                                found = 1
-                    if found == 0:
-                        if self.selected.single_t == 0:
-                            target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
-                            self.selected.target.append(target)
-                        else:
-                            targets = []
-                            target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
-                            targets.append(target)
-                            self.selected.target = targets
+                    self.selected.droneaction(self, pos)
             elif button == 1:
                 found = 0
                 for drone in self.drones:
