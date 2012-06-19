@@ -44,6 +44,8 @@ class Drone:
         self.generator_ico = pygame.image.load("sprites/gico.png")
         self.factory_ico = pygame.image.load("sprites/faico.png")
         self.medbay_ico = pygame.image.load("sprites/med_ico.png")
+        self.outpost_ico = pygame.image.load("sprites/out_ico.png")
+        self.stockpile_ico = pygame.image.load("sprites/sto_ico.png")
         self.power = 255
         self.inventory = [["battery", 0], ["iron ore", 0]]
         self.task = 0
@@ -78,6 +80,8 @@ class Drone:
         target.screen.blit(self.factory_ico, (637, 447))
         target.screen.blit(self.generator_ico, (687, 447))
         target.screen.blit(self.medbay_ico, (737, 447))
+        target.screen.blit(self.outpost_ico, (637, 497))
+        target.screen.blit(self.stockpile_ico, (687, 497))
         
     def colider (self, odrone, targ):
         dist = self.pos.get_distance(odrone.pos)
