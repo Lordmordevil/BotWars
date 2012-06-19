@@ -487,9 +487,10 @@ class Starter(PygameHelper):
                             self.selected = building
                      
         # ------------------- Hud control ------------------------
-        curpos = vec2d(pos)
-        if button == 1:
-            self.selected.detectact(self, curpos)
+        else:
+            curpos = vec2d(pos)
+            if button == 1:
+                self.selected.detectact(self, curpos)
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
