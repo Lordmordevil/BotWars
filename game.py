@@ -168,7 +168,13 @@ class Main_base(Building):
         target.drawhudbuttons(2)
         target.screen.blit(self.dro_ico, (637, 447))
         target.screen.blit(self.bat_ico, (687, 447))
-                        
+            
+    def detectact(self, target, curpos):
+        if curpos.get_distance(vec2d(646, 456)) <= 15:
+            target.drones.append(self.bdrone())
+        if curpos.get_distance(vec2d(696, 456)) <= 15:
+            self.bbat()
+            
 class Up_factory(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
@@ -420,10 +426,7 @@ class Starter(PygameHelper):
         curpos = vec2d(pos)
         if button == 1:
             if type(self.selected) == Main_base:
-                if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    self.drones.append(self.selected.bdrone())
-                if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    self.selected.bbat()
+                self.selected.detectact(self, curpos)
             if type(self.selected) == Up_factory:
                 if curpos.get_distance(vec2d(646, 456)) <= 15:
                     if self.buildings[0].inventory[1][1] > 40000:
