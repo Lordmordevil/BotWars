@@ -83,6 +83,18 @@ class Drone:
         target.screen.blit(self.outpost_ico, (637, 497))
         target.screen.blit(self.stockpile_ico, (687, 497))
         
+    def detectact(self, target, curpos):
+        if curpos.get_distance(vec2d(646, 456)) <= 15:
+            target.startbuild(60000, 1)
+        if curpos.get_distance(vec2d(696, 456)) <= 15:
+            target.startbuild(50000, 2)
+        if curpos.get_distance(vec2d(746, 456)) <= 15:
+            target.startbuild(50000, 3)  
+        if curpos.get_distance(vec2d(646, 506)) <= 15:
+            target.startbuild(50000, 4) 
+        if curpos.get_distance(vec2d(696, 506)) <= 15:
+            target.startbuild(50000, 5)
+        
     def colider (self, odrone, targ):
         dist = self.pos.get_distance(odrone.pos)
         if dist < 26:
@@ -170,8 +182,10 @@ class Main_base(Building):
         target.screen.blit(self.bat_ico, (687, 447))
             
     def detectact(self, target, curpos):
+        print("bbbbb", curpos)
         if curpos.get_distance(vec2d(646, 456)) <= 15:
             target.drones.append(self.bdrone())
+            print("aaa")
         if curpos.get_distance(vec2d(696, 456)) <= 15:
             self.bbat()
             
@@ -190,6 +204,26 @@ class Up_factory(Building):
         target.screen.blit(self.supic, (637, 447))
         target.screen.blit(self.mupic, (687, 447))
         
+    def detectact(self, target, curpos):
+        if curpos.get_distance(vec2d(646, 456)) <= 15:
+            if target.buildings[0].inventory[1][1] > 40000:
+                target.buildings[0].inventory[1][1] -= 40000
+                Drone.speed = 6
+                print("Drone speed upgraded 20%")
+                for drone in target.drones:
+                    drone.speed = 6
+            else:
+                print("You need 40 000 ore to buy speed upgrade!")
+        if curpos.get_distance(vec2d(696, 456)) <= 15:
+            if target.buildings[0].inventory[1][1] > 40000:
+                target.buildings[0].inventory[1][1] -= 40000
+                Drone.mining_speed = 2
+                print("Drone mining speed increased by 100%")
+                for drone in target.drones:
+                    drone.mining_speed = 2
+            else:
+                print("You need 40 000 ore to buy mining speed upgrade!")
+        
 class Generator(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
@@ -197,9 +231,10 @@ class Generator(Building):
         self.image.setup("generator")
         self.size = 50    
     
-    
-    
     def drawhud(self, target):
+        pass
+        
+    def detectact(self, target, curpos):
         pass
         
 class Whearhouse(Building):
@@ -209,9 +244,10 @@ class Whearhouse(Building):
         self.image.setup("stockpile")
         self.size = 50    
     
-    
-    
     def drawhud(self, target):
+        pass
+        
+    def detectact(self, target, curpos):
         pass
         
 class Outpost(Building):
@@ -222,6 +258,9 @@ class Outpost(Building):
         self.size = 35    
     
     def drawhud(self, target):
+        pass
+        
+    def detectact(self, target, curpos):
         pass
 
 class Medbay(Building):
@@ -238,6 +277,24 @@ class Medbay(Building):
         target.drawhudbuttons(2)
         target.screen.blit(self.ico_medic, (637, 447))
         target.screen.blit(self.ico_medshop, (687, 447))
+        
+    def detectact(self, target, curpos):
+        if curpos.get_distance(vec2d(646, 456)) <= 15:
+            if target.buildings[0].inventory[1][1] > 40000:
+                target.buildings[0].inventory[1][1] -= 40000
+
+                print("medic ready for duty")
+
+            else:
+                print("You need 40 000 ore to buy this unit!")
+        if curpos.get_distance(vec2d(696, 456)) <= 15:
+            if target.buildings[0].inventory[1][1] > 40000:
+                target.buildings[0].inventory[1][1] -= 40000
+
+                print("Battery truck ready for duty")
+
+            else:
+                print("You need 40 000 ore to buy this unit!")
 
 class Ore:
     def __init__(self):
@@ -414,66 +471,16 @@ class Starter(PygameHelper):
                             self.selected = building
                      
         # ------------------- Hud control ------------------------
-        
-        def startbuild(price, type):
-            if self.buildings[0].inventory[1][1] > price:
-                self.buildings[0].inventory[1][1] -= price
-                self.hud.build_mode = 1
-                self.buildtype = type
-                self.selected.target.append(self.buildings[0].pos)
-                self.builder = self.selected
-        
         curpos = vec2d(pos)
         if button == 1:
             if type(self.selected) == Main_base:
                 self.selected.detectact(self, curpos)
             if type(self.selected) == Up_factory:
-                if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 40000:
-                        self.buildings[0].inventory[1][1] -= 40000
-                        Drone.speed = 6
-                        print("Drone speed upgraded 20%")
-                        for drone in self.drones:
-                            drone.speed = 6
-                    else:
-                        print("You need 40 000 ore to buy speed upgrade!")
-                if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 40000:
-                        self.buildings[0].inventory[1][1] -= 40000
-                        Drone.mining_speed = 2
-                        print("Drone mining speed increased by 100%")
-                        for drone in self.drones:
-                            drone.mining_speed = 2
-                    else:
-                        print("You need 40 000 ore to buy mining speed upgrade!")
+                self.selected.detectact(self, curpos)
             if type(self.selected) == Medbay:
-                if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 40000:
-                        self.buildings[0].inventory[1][1] -= 40000
-
-                        print("medic ready for duty")
-
-                    else:
-                        print("You need 40 000 ore to buy this unit!")
-                if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    if self.buildings[0].inventory[1][1] > 40000:
-                        self.buildings[0].inventory[1][1] -= 40000
-
-                        print("Battery truck ready for duty")
-
-                    else:
-                        print("You need 40 000 ore to buy this unit!")
+                self.selected.detectact(self, curpos)
             if type(self.selected) == Drone:
-                if curpos.get_distance(vec2d(646, 456)) <= 15:
-                    startbuild(60000, 1)
-                if curpos.get_distance(vec2d(696, 456)) <= 15:
-                    startbuild(50000, 2)
-                if curpos.get_distance(vec2d(746, 456)) <= 15:
-                    startbuild(50000, 3)  
-                if curpos.get_distance(vec2d(646, 506)) <= 15:
-                    startbuild(50000, 4) 
-                if curpos.get_distance(vec2d(696, 506)) <= 15:
-                    startbuild(50000, 5)
+                self.selected.detectact(self, curpos)
         
     def mouseMotion(self, buttons, pos, rel):
         if pos[0] > 750 and pos[1] < 400:
@@ -492,7 +499,15 @@ class Starter(PygameHelper):
                 dir = (building.pos - self.hud.pos) - pos
                 if dir.length < building.size + 60:
                     self.hud.buildcolor = (255, 0, 0)
-                          
+                    
+    def startbuild(self, price, type):
+        if self.buildings[0].inventory[1][1] > price:
+            self.buildings[0].inventory[1][1] -= price
+            self.hud.build_mode = 1
+            self.buildtype = type
+            self.selected.target.append(self.buildings[0].pos)
+            self.builder = self.selected
+  
     def draw(self):
         self.screen.fill((0, 0, 0))
         
