@@ -122,6 +122,7 @@ class Drone:
                         target.selected.target.append(target.buildings[0].pos)
                         target.selected.task = 2
                         target.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
+                        print("Going to charge another drone!")
                         return 1
             return 0
         
@@ -140,7 +141,7 @@ class Drone:
                     dir = building.pos - btarget
                     if dir.length < building.size + 50: permit = False
                 if permit:
-                    print("Sgradata shte bude ostroena na koordinati - ", btarget)
+                    print("The new building will be built at - ", btarget)
                     target.project = btarget
                     target.hud.build_mode = 2
                     target.builder.target.append(target.project)
@@ -191,30 +192,32 @@ class Main_base(Building):
         if requester.task == 1:
             self.inventory[1][1] += requester.inventory[1][1]
             requester.inventory[1][1] = 0
-            print("Resursite v bazata sa", self.inventory, "Power: ", self.power)
+            print("Main stock is: ", self.inventory, "Power: ", self.power)
             requester.task = 0
-            print("Rabotnika se zavrushta da kopae")
+            print("Drone returns to mining duty.")
         elif requester.task == 2:
             if self.inventory[0][1] > 0:
-                print("Rabotnik vze 1 bateriq ot sklada!")
+                print("Drone took one battery from store.We have ", self.inventory[0][1]," left!")
                 self.inventory[0][1] -= 1
                 requester.inventory[0][1] += 1
                
     def bdrone(self):
-        if self.inventory[1][1] > 40000:
-            self.inventory[1][1] -= 40000
+        if self.inventory[1][1] > 10000:
+            self.inventory[1][1] -= 10000
             tempdrone = Drone()
             tempdrone.pos = self.pos
             target = self.pos
             tempdrone.target.append(target)
+            print("New drone is waiting for orders!")
             return tempdrone
         else:
-            print("You need 40 000 ore to buy this!")
+            print("You need 10 000 ore to buy this!")
             
     def bbat(self):
         if self.inventory[1][1] > 5000:
             self.inventory[1][1] -= 5000
             self.inventory[0][1] += 1
+            print("Another battery added to storage!")
         else:
             print("You need 5000 to buy a battery!")
             
@@ -233,10 +236,8 @@ class Main_base(Building):
         target.screen.blit(self.bat_ico, (687, 447))
             
     def detectact(self, target, curpos):
-        print("bbbbb", curpos)
         if curpos.get_distance(vec2d(646, 456)) <= 15:
             target.drones.append(self.bdrone())
-            print("aaa")
         if curpos.get_distance(vec2d(696, 456)) <= 15:
             self.bbat()
             
@@ -260,7 +261,7 @@ class Up_factory(Building):
             if target.buildings[0].inventory[1][1] > 40000:
                 target.buildings[0].inventory[1][1] -= 40000
                 Drone.speed = 6
-                print("Drone speed upgraded 20%")
+                print("Drone speed upgraded by 20%.")
                 for drone in target.drones:
                     drone.speed = 6
             else:
@@ -331,18 +332,18 @@ class Medbay(Building):
         
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:
-            if target.buildings[0].inventory[1][1] > 40000:
-                target.buildings[0].inventory[1][1] -= 40000
+            if target.buildings[0].inventory[1][1] > 20000:
+                target.buildings[0].inventory[1][1] -= 20000
 
-                print("medic ready for duty")
+                print("Medic ready for duty!")
 
             else:
-                print("You need 40 000 ore to buy this unit!")
+                print("You need 20 000 ore to buy this unit!")
         if curpos.get_distance(vec2d(696, 456)) <= 15:
             if target.buildings[0].inventory[1][1] > 40000:
                 target.buildings[0].inventory[1][1] -= 40000
 
-                print("Battery truck ready for duty")
+                print("Battery truck ready for duty!")
 
             else:
                 print("You need 40 000 ore to buy this unit!")
