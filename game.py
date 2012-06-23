@@ -401,7 +401,6 @@ class Hud:
         self.hud = pygame.image.load("sprites/hud.png")
         self.sing_dir = pygame.image.load("sprites/sp.png")
         self.mul_dir = pygame.image.load("sprites/mp.png")
-        
         self.tile = pygame.image.load("sprites/grass.png")
 
 class Starter(PygameHelper):
@@ -429,10 +428,22 @@ class Starter(PygameHelper):
         self.buildings = []
         self.ores = []
         
-        for ore in range (15):
+        count = 0
+        while count < 15:
             tempore = Ore()
             tempore.pos = vec2d(int(uniform(0, 1500)), int(uniform(0, 1500)))
-            self.ores.append(tempore)
+            if not len(self.ores) == 0:
+                flag = 1
+                for orecheck in self.ores:
+                    dist = orecheck.pos.get_distance(tempore.pos)
+                    if dist < 120:
+                        flag = 0
+                if flag:
+                    self.ores.append(tempore)
+                    count += 1
+            else:
+                self.ores.append(tempore)
+                count += 1
         
         firstbuild = Main_base()
         firstbuild.pos = vec2d(300, 300)
