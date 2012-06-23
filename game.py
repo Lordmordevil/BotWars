@@ -171,6 +171,9 @@ class Building:
         self.pos = vec2d(0, 0)
         self.size = 0
 
+    def update(self):
+        pass
+        
 class Main_base(Building):
     def __init__(self):
         self.size = 140
@@ -305,15 +308,31 @@ class Whearhouse(Building):
 class Outpost(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
+        self.up_ico = pygame.image.load("sprites/up_ico.png")
         self.image = Animation()
         self.image.setup("outpost")
-        self.size = 35    
-    
-    def drawhud(self, target):
+        self.size = 35
+        self.level = 0
+        self.target = vec2d(0, 0)
+        
+    def update(self):
         pass
         
+    def drawhud(self, target):
+        target.screen.blit(self.ico_pic, (230, 500))
+        target.drawhudbuttons(1)
+        target.screen.blit(self.up_ico, (637, 447))
+        
     def detectact(self, target, curpos):
-        pass
+        if curpos.get_distance(vec2d(646, 456)) <= 15:
+            self.upgrade()
+            
+    def upgrade(self):
+        self.level = 1
+        self.target = self.pos
+        tempimage = Animation()
+        tempimage.setup("upoutpost")
+        self.image = tempimage
 
 class Medbay(Building):
     def __init__(self):
@@ -438,7 +457,8 @@ class Starter(PygameHelper):
             self.buildings.append(tempbuild)
             self.hud.build_mode = 0
         
-        self.buildings[0].update()
+        for building in self.buildings:
+            building.update()
     
         for drone in self.drones:
             if drone.power > 1:
@@ -461,7 +481,11 @@ class Starter(PygameHelper):
                 if building.pos.get_distance(drone.pos) < drone.speed:
                     if drone.target[0] == building.pos and (type(building)  is Main_base or type(building)  is Outpost):
                         self.buildings[0].request(drone)
-                    
+                if type(building) is Outpost and building.level == 1 and building.pos.get_distance(drone.pos) < 200:
+                    if drone.power > 10:
+                        building.target = drone.pos
+                        drone.power -= 10
+                        
     def keyUp(self, key):
         pass 
      
@@ -556,7 +580,11 @@ class Starter(PygameHelper):
                 pygame.draw.line(self.screen, (0, 255, 0), (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos, self.buildings[0].pos - self.hud.pos)
         for building in self.buildings:
             building.image.draw(self, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
-            
+            if type(building) is Outpost and building.level == 1:
+                pygame.draw.circle(self.screen, (0, 0, 40), building.pos - self.hud.pos, 200, 2)
+                pygame.draw.line(self.screen, (0, 0, 200), building.pos - self.hud.pos, building.target - self.hud.pos)
+                building.target = building.pos
+                
     def drawbattery(self, cap):
         pygame.draw.rect(self.screen, (0, 0, 0), (345, 515, 15, 10), 2)
         pygame.draw.rect(self.screen, (255 - int(self.selected.power / cap), 0 + int(self.selected.power / cap), 0), (340, 520, 25, 75))
