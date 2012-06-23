@@ -97,8 +97,8 @@ class Drone:
         
     def colider (self, odrone, targ):
         dist = self.pos.get_distance(odrone.pos)
-        if dist < 26:
-            overlap = 26 - dist
+        if dist < 56:
+            overlap = 56 - dist
             ndir = odrone.pos - self.pos
             ndir.length = overlap
             if self.task == 2 and odrone.power < 1:
@@ -560,12 +560,12 @@ class Starter(PygameHelper):
     def drawentities(self):
         for drone in self.drones:
             if drone == self.selected:
-                pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 21, 1)
+                pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 26, 1)
                 for target in drone.target:
                     pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
                 for i in range(len(drone.target) - 1):
                     pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
-            drone.image.draw(self, (drone.pos[0] - 10 - self.hud.pos[0], drone.pos[1] - 10 - self.hud.pos[1]))
+            drone.image.draw(self, (drone.pos[0] - 25 - self.hud.pos[0], drone.pos[1] - 25 - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
             
     def drawstaticmap(self):
@@ -575,9 +575,20 @@ class Starter(PygameHelper):
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
         for building in self.buildings:
-            if type(building) is Generator or type(building) is Outpost or type(building) is Whearhouse:
+            if type(building) is Outpost:
                 pygame.draw.line(self.screen, (0, 255, 0), building.pos - self.hud.pos, (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos)
                 pygame.draw.line(self.screen, (0, 255, 0), (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos, self.buildings[0].pos - self.hud.pos)
+            elif type(building) is Generator or type(building) is Whearhouse:
+                tempbuilding = 0
+                reldist = 0
+                for obuilding in self.buildings:
+                    if type(obuilding) is Main_base or type(obuilding) is Outpost:
+                        dir = building.pos - obuilding.pos
+                        if dir.length < reldist or reldist == 0:
+                            tempbuilding = obuilding
+                            reldist = dir.length
+                pygame.draw.line(self.screen, (0, 255, 0), building.pos - self.hud.pos, (building.pos[0],tempbuilding.pos[1]) - self.hud.pos)
+                pygame.draw.line(self.screen, (0, 255, 0), (building.pos[0],tempbuilding.pos[1]) - self.hud.pos, tempbuilding.pos - self.hud.pos)
         for building in self.buildings:
             building.image.draw(self, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
             if type(building) is Outpost and building.level == 1:
