@@ -602,6 +602,11 @@ class Starter(PygameHelper):
                     pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)        
             drone.image.draw(self, (drone.pos[0] - 25 - self.hud.pos[0], drone.pos[1] - 25 - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
+        pygame.draw.rect(self.screen, (0, 150, 0), (9, 9, 104, 5), 2)
+        pygame.draw.line(self.screen, (255, 255, 0), (11,11), (11 + int(self.buildings[0].inventory[1][1]/112000),11), 2)
+        print(int(self.buildings[0].inventory[1][1]/112000))
+        if int(self.buildings[0].inventory[1][1]/112000) == 5:
+            self.running = False
         
     def drawstaticmap(self):
         for i in range(9):
