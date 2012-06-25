@@ -7,6 +7,7 @@ from random import uniform
 import glob, sys
 
 class Animation:
+    ''' Visualisation of entity. '''
     def __init__(self):
         self.frames = []
         self.curframe = 0
@@ -14,6 +15,7 @@ class Animation:
         self.timer = 0
     
     def setup(self, folder):
+        ''' Goes in the given folder and takes all the framse in order to visualise them later. '''
         tempimages = glob.glob("sprites/" + folder + "/frame*.png")
         tempimages.sort()
         for i in range(len(tempimages)):        
@@ -21,6 +23,7 @@ class Animation:
         self.maxframe = len(self.frames) - 1
  
     def draw(self, target, pos):
+        ''' Draw curent frame and move to the next one. '''
         target.screen.blit(self.frames[self.curframe], pos)
         
         if self.curframe == self.maxframe:
@@ -60,10 +63,10 @@ class Drone:
             self.pos = vec2d(int(self.pos[0] + dir[0]), int(self.pos[1] + dir[1]))
         else:
             if len(self.target) > 1:
-                temptargets = self.target[1:len(self.target)]
+                temptargets = self.target[1:]
                 self.target = temptargets
                 
-    def drawhud(self, target):
+    def draw_hud(self, target):
         if self.single_t == 1:
             target.screen.blit(target.hud.sing_dir, (280, 427))
         else:
@@ -76,7 +79,7 @@ class Drone:
         pygame.draw.rect(target.screen, (75, 75, 75), (380, 505, 25, 25 - int(self.inventory[1][1] / 40)))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
-        target.drawhudbuttons(5)
+        target.draw_hudbuttons(5)
         target.screen.blit(self.factory_ico, (637, 447))
         target.screen.blit(self.generator_ico, (687, 447))
         target.screen.blit(self.medbay_ico, (737, 447))
@@ -84,17 +87,12 @@ class Drone:
         target.screen.blit(self.stockpile_ico, (687, 497))
         
     def detectact(self, target, curpos):
-        if curpos.get_distance(vec2d(646, 456)) <= 15:
-            target.startbuild(60000, 1)
-        if curpos.get_distance(vec2d(696, 456)) <= 15:
-            target.startbuild(50000, 2)
-        if curpos.get_distance(vec2d(746, 456)) <= 15:
-            target.startbuild(50000, 3)  
-        if curpos.get_distance(vec2d(646, 506)) <= 15:
-            target.startbuild(50000, 4) 
-        if curpos.get_distance(vec2d(696, 506)) <= 15:
-            target.startbuild(50000, 5)
-        
+        ''' `buttons` contains button coords and building instructions '''
+        button = [((646, 456), (6000, 1)), ((696, 456), (5000, 2)), ((746, 456), (5000, 3)), ((646, 506), (5000, 4)), ((696, 506), (5000, 5)),]
+        for build_button in button:
+            if curpos.get_distance(vec2d(*build_button[0])) <= 15:
+                target.startbuild(*build_button[1]) 
+       
     def colider (self, odrone, targ):
         dist = self.pos.get_distance(odrone.pos)
         if dist < 56:
@@ -118,7 +116,7 @@ class Drone:
         def helpdrone(target, pos):
             for drone in target.drones:
                 if drone.pos.get_distance(vec2d(pos[0] + target.hud.pos[0], pos[1] + target.hud.pos[1])) < 20 and drone.power < 1:
-                    if not drone == target.selected:
+                    if drone is not target.selected:
                         target.selected.target.append(target.buildings[0].pos)
                         target.selected.task = 2
                         target.selected.target.append(vec2d(int(drone.pos[0]), int(drone.pos[1])))
@@ -185,13 +183,14 @@ class Main_base(Building):
         self.dro_ico = pygame.image.load("sprites/dro_ico.png")
         self.inventory = [["battery", 2], ["iron ore", 500000]]
         self.powergain = 5
+        self.target = vec2d(0, 0)
         self.power = 100000
         self.inv = 1000000
         
     def request(self, requester):
         if self.power > 255:
+            self.power -= 255 - requester.power
             requester.power = 255
-            self.power -= 255
         if requester.task == 1:
             self.inventory[1][1] += requester.inventory[1][1]
             requester.inventory[1][1] = 0
@@ -203,8 +202,9 @@ class Main_base(Building):
                 print("Drone took one battery from store.We have ", self.inventory[0][1]," left!")
                 self.inventory[0][1] -= 1
                 requester.inventory[0][1] += 1
+        requester.target.insert(1, self.target)
                
-    def bdrone(self):
+    def buy_drone(self):
         if self.inventory[1][1] > 10000:
             self.inventory[1][1] -= 10000
             tempdrone = Drone()
@@ -216,7 +216,7 @@ class Main_base(Building):
         else:
             print("You need 10 000 ore to buy this!")
             
-    def bbat(self):
+    def buy_battery(self):
         if self.inventory[1][1] > 5000:
             self.inventory[1][1] -= 5000
             self.inventory[0][1] += 1
@@ -228,23 +228,23 @@ class Main_base(Building):
         if self.power < 255000:
             self.power += self.powergain
             
-    def drawhud(self, target):
+    def draw_hud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
         target.drawbattery(cap = 1000)       
         target.screen.blit(self.storepic, (381, 501))
         pygame.draw.rect(target.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.inventory[1][1] / (self.inv / 50))))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 500, 202, 52), 2)  
-        target.drawhudbuttons(2)
+        target.draw_hudbuttons(2)
         target.screen.blit(self.dro_ico, (637, 447))
         target.screen.blit(self.bat_ico, (687, 447))
             
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:
-            target.drones.append(self.bdrone())
+            target.drones.append(self.buy_drone())
         if curpos.get_distance(vec2d(696, 456)) <= 15:
-            self.bbat()
+            self.buy_battery()
             
-class Up_factory(Building):
+class UpgradeFactory(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
         self.image = Animation()
@@ -253,9 +253,9 @@ class Up_factory(Building):
         self.mupic = pygame.image.load("sprites/mup.png")
         self.size = 50
         
-    def drawhud(self, target):
+    def draw_hud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
-        target.drawhudbuttons(2)
+        target.draw_hudbuttons(2)
         target.screen.blit(self.supic, (637, 447))
         target.screen.blit(self.mupic, (687, 447))
         
@@ -286,7 +286,7 @@ class Generator(Building):
         self.image.setup("generator")
         self.size = 50    
     
-    def drawhud(self, target):
+    def draw_hud(self, target):
         pass
         
     def detectact(self, target, curpos):
@@ -299,7 +299,7 @@ class Whearhouse(Building):
         self.image.setup("stockpile")
         self.size = 50    
     
-    def drawhud(self, target):
+    def draw_hud(self, target):
         pass
         
     def detectact(self, target, curpos):
@@ -318,9 +318,9 @@ class Outpost(Building):
     def update(self):
         pass
         
-    def drawhud(self, target):
+    def draw_hud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
-        target.drawhudbuttons(1)
+        target.draw_hudbuttons(1)
         target.screen.blit(self.up_ico, (637, 447))
         
     def detectact(self, target, curpos):
@@ -343,9 +343,9 @@ class Medbay(Building):
         self.ico_medshop = pygame.image.load("sprites/mup.png")
         self.size = 50
 
-    def drawhud(self, target):        
+    def draw_hud(self, target):        
         target.screen.blit(self.ico_pic, (230, 500))
-        target.drawhudbuttons(2)
+        target.draw_hudbuttons(2)
         target.screen.blit(self.ico_medic, (637, 447))
         target.screen.blit(self.ico_medshop, (687, 447))
         
@@ -447,13 +447,14 @@ class Starter(PygameHelper):
         
         firstbuild = Main_base()
         firstbuild.pos = vec2d(300, 300)
+        firstbuild.target = firstbuild.pos
         self.buildings.append(firstbuild)
             
     def update(self):
     
         def finishbuild (buildtype):
             if buildtype == 1:
-                tempbuild = Up_factory()
+                tempbuild = UpgradeFactory()
             elif buildtype == 2:
                 tempbuild = Generator()
                 self.buildings[0].powergain += 5    
@@ -511,6 +512,8 @@ class Starter(PygameHelper):
             if button == 3:
                 if type(self.selected) is Drone:
                     self.selected.droneaction(self, pos)
+                elif type(self.selected) is Main_base:
+                    self.selected.target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
             elif button == 1:
                 found = 0
                 for drone in self.drones:
@@ -566,7 +569,7 @@ class Starter(PygameHelper):
         
         self.screen.blit(self.hud.hud, (0, 400))
 
-        self.selected.drawhud(self)
+        self.selected.draw_hud(self)
                       
     def drawentities(self):
         for drone in self.drones:
@@ -575,16 +578,19 @@ class Starter(PygameHelper):
                 for target in drone.target:
                     pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
                 for i in range(len(drone.target) - 1):
-                    pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)
+                    pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)        
             drone.image.draw(self, (drone.pos[0] - 25 - self.hud.pos[0], drone.pos[1] - 25 - self.hud.pos[1]))
             pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
-            
+        
     def drawstaticmap(self):
         for i in range(9):
             for j in range(7):
                 self.screen.blit(self.hud.tile, ( (100 * i) - (self.hud.pos[0] % 100) , (100 * j) - (self.hud.pos[1] % 100) ) )
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
+        if type(self.selected) is Main_base:
+            pygame.draw.circle(self.screen, (0, 200, 0), self.selected.target - self.hud.pos, 26, 1)
+            pygame.draw.line(self.screen, (0, 200, 0), self.selected.pos - self.hud.pos, self.selected.target - self.hud.pos)    
         for building in self.buildings:
             if type(building) is Outpost:
                 pygame.draw.line(self.screen, (0, 255, 0), building.pos - self.hud.pos, (building.pos[0],self.buildings[0].pos[1]) - self.hud.pos)
@@ -613,7 +619,7 @@ class Starter(PygameHelper):
         pygame.draw.rect(self.screen, (0, 0, 0), (340, 520, 25, 75), 2)
         pygame.draw.rect(self.screen, (0, 0, 0), (340, 520, 25, 75 - (self.selected.power / (3.4 * cap))))
            
-    def drawhudbuttons(self, butons):
+    def draw_hudbuttons(self, butons):
         if butons >= 1:
             pygame.draw.rect(self.screen, (45, 45, 45), (632, 442, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (630, 440, 32, 32), 2)
