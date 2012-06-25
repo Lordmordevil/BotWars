@@ -36,19 +36,20 @@ class Animation:
                 self.timer += 1
     
 class Drone:
+    '''Class for workers!'''
     def __init__(self):
         self.pos = vec2d(0, 0)
         self.target = []
         self.single_t = True
         self.image = Animation()
         self.image.setup("drone")
-        self.def_pic = pygame.image.load("sprites/bat_ico.png")
+        self.def_pic = pygame.image.load("sprites/icons/bat_ico.png")
         self.ico_pic = pygame.image.load("sprites/bot_ico.png")
-        self.generator_ico = pygame.image.load("sprites/gico.png")
-        self.factory_ico = pygame.image.load("sprites/faico.png")
-        self.medbay_ico = pygame.image.load("sprites/med_ico.png")
-        self.outpost_ico = pygame.image.load("sprites/out_ico.png")
-        self.stockpile_ico = pygame.image.load("sprites/sto_ico.png")
+        self.generator_ico = pygame.image.load("sprites/icons/gico.png")
+        self.factory_ico = pygame.image.load("sprites/icons/faico.png")
+        self.medbay_ico = pygame.image.load("sprites/icons/med_ico.png")
+        self.outpost_ico = pygame.image.load("sprites/icons/out_ico.png")
+        self.stockpile_ico = pygame.image.load("sprites/icons/sto_ico.png")
         self.power = 255
         self.inventory = [["battery", 0], ["iron ore", 0]]
         self.task = 0
@@ -179,17 +180,17 @@ class Main_base(Building):
         self.image = Animation()
         self.image.setup("main")
         self.ico_pic = pygame.image.load("sprites/main_ico.png")
-        self.bat_ico = pygame.image.load("sprites/bat_ico.png")
-        self.dro_ico = pygame.image.load("sprites/dro_ico.png")
+        self.bat_ico = pygame.image.load("sprites/icons/bat_ico.png")
+        self.dro_ico = pygame.image.load("sprites/icons/dro_ico.png")
         self.inventory = [["battery", 2], ["iron ore", 500000]]
         self.powergain = 5
         self.target = vec2d(0, 0)
         self.power = 100000
         self.inv = 1000000
         
-    def request(self, requester):
+    def request(self, requester, caller):
         if self.power > 255:
-            self.power -= 255 - requester.power
+            self.power -= int(255 - requester.power)
             requester.power = 255
         if requester.task == 1:
             self.inventory[1][1] += requester.inventory[1][1]
@@ -202,7 +203,7 @@ class Main_base(Building):
                 print("Drone took one battery from store.We have ", self.inventory[0][1]," left!")
                 self.inventory[0][1] -= 1
                 requester.inventory[0][1] += 1
-        requester.target.insert(1, self.target)
+        requester.target.insert(1, caller.target)
                
     def buy_drone(self):
         if self.inventory[1][1] > 10000:
@@ -249,8 +250,8 @@ class UpgradeFactory(Building):
         self.ico_pic = pygame.image.load("sprites/factory_ico.png")
         self.image = Animation()
         self.image.setup("factory")
-        self.supic = pygame.image.load("sprites/spu.png")
-        self.mupic = pygame.image.load("sprites/mup.png")
+        self.supic = pygame.image.load("sprites/icons/spu.png")
+        self.mupic = pygame.image.load("sprites/icons/mup.png")
         self.size = 50
         
     def draw_hud(self, target):
@@ -308,12 +309,13 @@ class Whearhouse(Building):
 class Outpost(Building):
     def __init__(self):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
-        self.up_ico = pygame.image.load("sprites/up_ico.png")
+        self.up_ico = pygame.image.load("sprites/icons/up_ico.png")
         self.image = Animation()
         self.image.setup("outpost")
         self.size = 35
         self.level = 0
         self.target = vec2d(0, 0)
+        self.fire_target = vec2d(0, 0)
         
     def update(self):
         pass
@@ -330,6 +332,7 @@ class Outpost(Building):
     def upgrade(self):
         self.level = 1
         self.target = self.pos
+        self.fire_target = self.pos
         tempimage = Animation()
         tempimage.setup("upoutpost")
         self.image = tempimage
@@ -339,8 +342,8 @@ class Medbay(Building):
         self.ico_pic = pygame.image.load("sprites/generator_ico.png")
         self.image = Animation()
         self.image.setup("medbay")
-        self.ico_medic = pygame.image.load("sprites/mup.png")
-        self.ico_medshop = pygame.image.load("sprites/mup.png")
+        self.ico_medic = pygame.image.load("sprites/icons/mup.png")
+        self.ico_medshop = pygame.image.load("sprites/icons/mup.png")
         self.size = 50
 
     def draw_hud(self, target):        
@@ -371,7 +374,7 @@ class Ore:
     def __init__(self):
         self.pos = vec2d(0, 0)
         self.pic = pygame.image.load("sprites/iron_ore.png")
-        self.ico = pygame.image.load("sprites/ore_ico.png")
+        self.ico = pygame.image.load("sprites/icons/ore_ico.png")
         self.quantity = 800000
         self.size = 50
         
@@ -399,9 +402,10 @@ class Hud:
         self.buildcolor = (0, 255, 0)
         self.pos = vec2d(0, 0) 
         self.hud = pygame.image.load("sprites/hud.png")
-        self.sing_dir = pygame.image.load("sprites/sp.png")
-        self.mul_dir = pygame.image.load("sprites/mp.png")
+        self.sing_dir = pygame.image.load("sprites/icons/sp.png")
+        self.mul_dir = pygame.image.load("sprites/icons/mp.png")
         self.tile = pygame.image.load("sprites/grass.png")
+        self.move = [0,0,0,0]
 
 class Starter(PygameHelper):
     def __init__(self):
@@ -447,7 +451,7 @@ class Starter(PygameHelper):
         
         firstbuild = Main_base()
         firstbuild.pos = vec2d(300, 300)
-        firstbuild.target = firstbuild.pos
+        firstbuild.target = vec2d(firstbuild.pos[0] + 10, firstbuild.pos[1])
         self.buildings.append(firstbuild)
             
     def update(self):
@@ -462,6 +466,7 @@ class Starter(PygameHelper):
                 tempbuild = Medbay()
             elif buildtype == 4:
                 tempbuild = Outpost()
+                tempbuild.target = vec2d(self.project[0] + 10, self.project[1])
             elif buildtype == 5:
                 tempbuild = Whearhouse()
                 self.buildings[0].inv += 500000
@@ -492,19 +497,35 @@ class Starter(PygameHelper):
             for building in self.buildings:
                 if building.pos.get_distance(drone.pos) < drone.speed:
                     if drone.target[0] == building.pos and (type(building)  is Main_base or type(building)  is Outpost):
-                        self.buildings[0].request(drone)
+                        self.buildings[0].request(drone, building)
                 if type(building) is Outpost and building.level == 1 and building.pos.get_distance(drone.pos) < 200:
                     if drone.power > 10:
-                        building.target = drone.pos
+                        building.fire_target = drone.pos
                         drone.power -= 10
+        self.move_window()
                         
     def keyUp(self, key):
-        pass 
+        if key == 100:
+            self.hud.move[0] = 0
+        if key == 97:
+            self.hud.move[1] = 0
+        if key == 119:
+            self.hud.move[2] = 0
+        if key == 115:
+            self.hud.move[3] = 0
      
     def keyDown(self, key):
         if type(self.selected) is Drone:
             if key == 304:
                 self.selected.single_t = not self.selected.single_t
+        if key == 100:
+            self.hud.move[0] = 1
+        if key == 97:
+            self.hud.move[1] = 1
+        if key == 119:
+            self.hud.move[2] = 1
+        if key == 115:
+            self.hud.move[3] = 1
         
     def mouseUp(self, button, pos):
         
@@ -512,7 +533,7 @@ class Starter(PygameHelper):
             if button == 3:
                 if type(self.selected) is Drone:
                     self.selected.droneaction(self, pos)
-                elif type(self.selected) is Main_base:
+                elif type(self.selected) is Main_base or type(self.selected) is Outpost:
                     self.selected.target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
             elif button == 1:
                 found = 0
@@ -588,7 +609,7 @@ class Starter(PygameHelper):
                 self.screen.blit(self.hud.tile, ( (100 * i) - (self.hud.pos[0] % 100) , (100 * j) - (self.hud.pos[1] % 100) ) )
         for ore in self.ores:
             self.screen.blit(ore.pic, (ore.pos[0] - 50 - self.hud.pos[0], ore.pos[1] - 50 - self.hud.pos[1]) )
-        if type(self.selected) is Main_base:
+        if type(self.selected) is Main_base or type(self.selected) is Outpost:
             pygame.draw.circle(self.screen, (0, 200, 0), self.selected.target - self.hud.pos, 26, 1)
             pygame.draw.line(self.screen, (0, 200, 0), self.selected.pos - self.hud.pos, self.selected.target - self.hud.pos)    
         for building in self.buildings:
@@ -610,8 +631,8 @@ class Starter(PygameHelper):
             building.image.draw(self, (building.pos[0] - building.size - self.hud.pos[0], building.pos[1] - building.size - self.hud.pos[1]))
             if type(building) is Outpost and building.level == 1:
                 pygame.draw.circle(self.screen, (0, 0, 40), building.pos - self.hud.pos, 200, 2)
-                pygame.draw.line(self.screen, (0, 0, 200), building.pos - self.hud.pos, building.target - self.hud.pos)
-                building.target = building.pos
+                pygame.draw.line(self.screen, (0, 0, 200), building.pos - self.hud.pos, building.fire_target - self.hud.pos)
+                building.fire_target = building.pos
                 
     def drawbattery(self, cap):
         pygame.draw.rect(self.screen, (0, 0, 0), (345, 515, 15, 10), 2)
@@ -638,6 +659,12 @@ class Starter(PygameHelper):
         if butons >= 6:
             pygame.draw.rect(self.screen, (45, 45, 45), (732, 492, 30, 30))
             pygame.draw.rect(self.screen, (0, 0, 0), (730, 490, 32, 32), 2)
+            
+    def move_window(self):
+        if self.hud.move[0]: self.hud.pos[0] += 10
+        if self.hud.move[1]: self.hud.pos[0] -= 10
+        if self.hud.move[2]: self.hud.pos[1] -= 10
+        if self.hud.move[3]: self.hud.pos[1] += 10
         
 s = Starter()
 s.mainLoop(40)
