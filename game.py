@@ -1,6 +1,5 @@
 from pygamehelper import *
 from pygame import *
-from pygame.locals import *
 from vec2d import vec2d
 from animation import Animation
 from math import e, pi, cos, sin, sqrt
@@ -8,8 +7,9 @@ from random import uniform
 
 from drone import Drone
 from resource import Ore
-from buildings import *            
-    
+from buildings import Building, MainBase, UpgradeFactory, \
+                    Generator, Whearhouse, Outpost, Medbay
+
 class Hud:
     def __init__(self):
         self.build_mode = 0
@@ -20,6 +20,7 @@ class Hud:
         self.mul_dir = pygame.image.load("sprites/icons/mp.png")
         self.tile = pygame.image.load("sprites/grass.png")
         self.move = [0,0,0,0]
+        self.all_coords = [(637, 447),(687, 447),(737, 447),(637, 497),(687, 497)]
 
 class Starter(PygameHelper):
     def __init__(self):
@@ -99,20 +100,26 @@ class Starter(PygameHelper):
                             self.ores.remove(ore)
                             
                 dir = drone.target[0] - drone.pos
-                if dir.length <= drone.speed and self.hud.build_mode == 2 and drone == self.builder and drone.target[0] == self.project:    
+                if dir.length <= drone.speed and self.hud.build_mode == 2 and \
+                                                drone == self.builder and \
+                                                drone.target[0] == self.project:    
                     if self.builder.pos.get_distance(self.project) < 20:
                         finishbuild(self.buildtype)
                         
                 drone.update()
             
             for odrone in self.drones:
-                if not drone == odrone: drone.colider(odrone, self)
+                if not drone == odrone:
+                    drone.colider(odrone, self)
                 
             for building in self.buildings:
                 if building.pos.get_distance(drone.pos) < drone.speed:
-                    if drone.target[0] == building.pos and (type(building)  is MainBase or type(building)  is Outpost):
+                    if drone.target[0] == building.pos and \
+                            (type(building)  is MainBase or \
+                            type(building)  is Outpost):
                         self.buildings[0].request(drone, building)
-                if type(building) is Outpost and building.level == 1 and building.pos.get_distance(drone.pos) < 200:
+                if type(building) is Outpost and building.level == 1 and \
+                                building.pos.get_distance(drone.pos) < 200:
                     if drone.power > 10:
                         building.fire_target = drone.pos
                         drone.power -= 10
@@ -147,17 +154,21 @@ class Starter(PygameHelper):
             if button == 3:
                 if type(self.selected) is Drone:
                     self.selected.droneaction(self, pos)
-                elif type(self.selected) is MainBase or type(self.selected) is Outpost:
-                    self.selected.target = vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])
+                elif type(self.selected) is MainBase or \
+                            type(self.selected) is Outpost:
+                    self.selected.target = vec2d(pos[0] + self.hud.pos[0],
+                                            pos[1] + self.hud.pos[1])
             elif button == 1:
                 found = 0
                 for drone in self.drones:
-                    if drone.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < 20:
+                    if drone.pos.get_distance(vec2d(pos[0] + self.hud.pos[0],
+                                            pos[1] + self.hud.pos[1])) < 20:
                         self.selected = drone
                         found = 1;
                 if found == 0:
                     for building in self.buildings:
-                        if building.pos.get_distance(vec2d(pos[0] + self.hud.pos[0], pos[1] + self.hud.pos[1])) < building.size:
+                        if building.pos.get_distance(vec2d(pos[0] + self.hud.pos[0],
+                                            pos[1] + self.hud.pos[1])) < building.size:
                             self.selected = building
                      
         # ------------------- Hud control ------------------------
@@ -198,7 +209,8 @@ class Starter(PygameHelper):
         self.drawstaticmap()
             
         if  self.hud.build_mode == 1:
-            pygame.draw.rect(self.screen, self.hud.buildcolor, (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
+            pygame.draw.rect(self.screen, self.hud.buildcolor,
+                (self.buildpos[0] - 50, self.buildpos[1] - 50, 102, 102), 2)
         
         self.drawentities()
         
@@ -209,15 +221,23 @@ class Starter(PygameHelper):
     def drawentities(self):
         for drone in self.drones:
             if drone == self.selected:
-                pygame.draw.circle(self.screen, (255, 0, 0), drone.target[0] - self.hud.pos, 26, 1)
+                pygame.draw.circle(self.screen, (255, 0, 0), 
+                                    drone.target[0] - self.hud.pos, 26, 1)
                 for target in drone.target:
-                    pygame.draw.circle(self.screen, (255, 0, 0), target - self.hud.pos, 3, 1)
+                    pygame.draw.circle(self.screen, (255, 0, 0),
+                                    target - self.hud.pos, 3, 1)
                 for i in range(len(drone.target) - 1):
-                    pygame.draw.line(self.screen, (255, 0, 0), drone.target[i] - self.hud.pos, drone.target[i + 1] - self.hud.pos)        
-            drone.image.draw(self, (drone.pos[0] - 25 - self.hud.pos[0], drone.pos[1] - 25 - self.hud.pos[1]))
-            pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0), (int(drone.pos[0]) - self.hud.pos[0], int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
+                    pygame.draw.line(self.screen, (255, 0, 0),
+                                    drone.target[i] - self.hud.pos,
+                                    drone.target[i + 1] - self.hud.pos)        
+            drone.image.draw(self, (drone.pos[0] - 25 - self.hud.pos[0],
+                                    drone.pos[1] - 25 - self.hud.pos[1]))
+            pygame.draw.circle(self.screen, (255 - drone.power, 0 + drone.power, 0),
+                                (int(drone.pos[0]) - self.hud.pos[0],
+                                int(drone.pos[1] - 2) - self.hud.pos[1]), 2)
         pygame.draw.rect(self.screen, (0, 150, 0), (9, 9, 104, 5), 2)
-        pygame.draw.line(self.screen, (255, 255, 0), (11,11), (11 + int(self.buildings[0].inventory[1][1]/112000),11), 2)
+        pygame.draw.line(self.screen, (255, 255, 0), (11,11),
+                                (11 + int(self.buildings[0].inventory[1][1]/112000),11), 2)
         if int(self.buildings[0].inventory[1][1]/112000) == 100:
             self.running = False
         

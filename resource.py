@@ -1,11 +1,10 @@
 from pygamehelper import *
 from pygame import *
-from pygame.locals import *
 from vec2d import vec2d
 from animation import Animation
 
 from drone import Drone
-from buildings import MainBase
+from buildings import MainBase, Outpost
 
 class Ore:
     def __init__(self):

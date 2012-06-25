@@ -1,8 +1,6 @@
 from pygamehelper import *
 from pygame import *
-from pygame.locals import *
 from vec2d import vec2d
-from buildings import *
 from animation import Animation
 
 class Drone:
@@ -51,11 +49,11 @@ class Drone:
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 505, 25, 25), 2)
             
         target.draw_hudbuttons(5)
-        target.screen.blit(self.factory_ico, (637, 447))
-        target.screen.blit(self.generator_ico, (687, 447))
-        target.screen.blit(self.medbay_ico, (737, 447))
-        target.screen.blit(self.outpost_ico, (637, 497))
-        target.screen.blit(self.stockpile_ico, (687, 497))
+        target.screen.blit(self.factory_ico, target.hud.all_coords[0])
+        target.screen.blit(self.generator_ico, target.hud.all_coords[1])
+        target.screen.blit(self.medbay_ico, target.hud.all_coords[2])
+        target.screen.blit(self.outpost_ico, target.hud.all_coords[3])
+        target.screen.blit(self.stockpile_ico, target.hud.all_coords[4])
         
     def detectact(self, target, curpos):
         ''' `buttons` contains button coords and building instructions '''

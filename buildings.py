@@ -1,10 +1,10 @@
 from pygamehelper import *
 from pygame import *
-from pygame.locals import *
 from vec2d import vec2d
 from animation import Animation
 from math import e, pi, cos, sin, sqrt
 from random import uniform
+from drone import Drone
 
 
 class Building:
@@ -13,6 +13,12 @@ class Building:
         self.size = 0
 
     def update(self):
+        pass
+    
+    def draw_hud(self, target):
+        pass
+        
+    def detectact(self, target, curpos):
         pass
 
 class MainBase(Building):
@@ -78,12 +84,14 @@ class MainBase(Building):
         pygame.draw.rect(target.screen, (85, 85, 85), (381, 501, 201, 51 - int(self.inventory[1][1] / (self.inv / 50))))
         pygame.draw.rect(target.screen, (0, 0, 0), (380, 500, 202, 52), 2)  
         target.draw_hudbuttons(2)
-        target.screen.blit(self.dro_ico, (637, 447))
-        target.screen.blit(self.bat_ico, (687, 447))
+        target.screen.blit(self.dro_ico, target.hud.all_coords[0])
+        target.screen.blit(self.bat_ico, target.hud.all_coords[1])
             
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:
-            target.drones.append(self.buy_drone())
+            new_drone = self.buy_drone()
+            if new_drone: 
+                target.drones.append(new_drone)
         if curpos.get_distance(vec2d(696, 456)) <= 15:
             self.buy_battery()
             
@@ -99,8 +107,8 @@ class UpgradeFactory(Building):
     def draw_hud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
         target.draw_hudbuttons(2)
-        target.screen.blit(self.supic, (637, 447))
-        target.screen.blit(self.mupic, (687, 447))
+        target.screen.blit(self.supic, target.hud.all_coords[0])
+        target.screen.blit(self.mupic, target.hud.all_coords[1])
         
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:
@@ -128,12 +136,6 @@ class Generator(Building):
         self.image = Animation()
         self.image.setup("generator")
         self.size = 50    
-    
-    def draw_hud(self, target):
-        pass
-        
-    def detectact(self, target, curpos):
-        pass
         
 class Whearhouse(Building):
     def __init__(self):
@@ -141,12 +143,6 @@ class Whearhouse(Building):
         self.image = Animation()
         self.image.setup("stockpile")
         self.size = 50    
-    
-    def draw_hud(self, target):
-        pass
-        
-    def detectact(self, target, curpos):
-        pass
         
 class Outpost(Building):
     def __init__(self):
@@ -162,7 +158,7 @@ class Outpost(Building):
     def draw_hud(self, target):
         target.screen.blit(self.ico_pic, (230, 500))
         target.draw_hudbuttons(1)
-        target.screen.blit(self.up_ico, (637, 447))
+        target.screen.blit(self.up_ico, target.hud.all_coords[0])
 
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:
@@ -188,8 +184,8 @@ class Medbay(Building):
     def draw_hud(self, target):        
         target.screen.blit(self.ico_pic, (230, 500))
         target.draw_hudbuttons(2)
-        target.screen.blit(self.ico_medic, (637, 447))
-        target.screen.blit(self.ico_medshop, (687, 447))
+        target.screen.blit(self.ico_medic, target.hud.all_coords[0])
+        target.screen.blit(self.ico_medshop, target.hud.all_coords[1])
         
     def detectact(self, target, curpos):
         if curpos.get_distance(vec2d(646, 456)) <= 15:

@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import *
 
 def frange(a, b, c):
     t = a
@@ -28,24 +27,24 @@ class PygameHelper:
         
     def handleEvents(self):
         for event in pygame.event.get():
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 self.keyDown(event.key)
-            elif event.type == KEYUP:
-                if event.key == K_ESCAPE:
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
                     self.running = False
                 self.keyUp(event.key)
-            elif event.type == MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 self.mouseUp(event.button, event.pos)
-            elif event.type == MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION:
                 self.mouseMotion(event.buttons, event.pos, event.rel)
     
     def waitForKey(self):
         press=False
         while not press:
             for event in pygame.event.get():
-                if event.type == KEYUP:
+                if event.type == pygame.KEYUP:
                     press = True
              
     def mainLoop(self, fps=0):
